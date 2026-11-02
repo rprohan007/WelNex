@@ -22,11 +22,21 @@ import { VirtualSimulatorDashboard } from './components/simulator/VirtualSimulat
 import { getInvestmentById } from './data/investmentsData';
 import { useAuth } from './context/AuthContext';
 import { ClerkAuthModal } from './components/auth/ClerkAuthModal';
+import { AuthenticateWithRedirectCallback } from '@clerk/clerk-react';
 import type { TickerItem } from './types';
 
 type AppView = 'home' | 'catalogue' | 'detail' | 'compare' | 'calculators' | 'academy' | 'radar' | 'simulator' | 'contact' | 'admin';
 
 export default function App() {
+  // Handle Clerk OAuth Redirect Callback (/sso-callback)
+  if (typeof window !== 'undefined' && window.location.pathname === '/sso-callback') {
+    return (
+      <div className="min-h-screen bg-sand flex flex-col items-center justify-center p-4">
+        <AuthenticateWithRedirectCallback signInForceRedirectUrl="/" />
+      </div>
+    );
+  }
+
   const { user, openAuthModal } = useAuth();
   const [currentView, setCurrentView] = useState<AppView>('home');
   const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);

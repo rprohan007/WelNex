@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import { useUser as useClerkUser, useClerk } from '@clerk/clerk-react';
 
 export interface WelNexUser {
   id: string;
@@ -22,7 +23,7 @@ interface AuthContextType {
   isLoaded: boolean;
   isClerkConfigured: boolean;
   signInWithGoogle: (email?: string, name?: string) => void;
-  signOut: () => void;
+  signOut: () => Promise<void> | void;
   isAuthorizedAdmin: (email?: string) => boolean;
   openAuthModal: () => void;
   closeAuthModal: () => void;
@@ -62,8 +63,11 @@ export function isEmailAuthorizedAdmin(email?: string, userMetadata?: { role?: s
 }
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<WelNexUser | null>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const { user: clerkUser, isLoaded: clerkLoaded, isSignedIn: clerkSignedIn } = useClerkUser();
+  const clerk = useClerk();
+
+  const [localUser, setLocalUser] = useState<WelNexUser | null>(null);
+  const [isLocalLoaded, setIsLocalLoaded] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   // Check if Clerk key is provided in environment
@@ -76,9 +80,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const stored = localStorage.getItem(AUTH_STORAGE_KEY);
       if (stored) {
         const parsed: WelNexUser = JSON.parse(stored);
-        // Refresh admin status dynamically in case admin team changed
         const isAdmin = isEmailAuthorizedAdmin(parsed.primaryEmailAddress?.emailAddress, parsed.publicMetadata);
-        setUser({
+        setLocalUser({
           ...parsed,
           isAdmin,
           role: isAdmin ? (parsed.primaryEmailAddress?.emailAddress === 'rprohan06@gmail.com' ? 'Super Admin' : 'Admin') : 'Verified Investor',
@@ -90,9 +93,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (e) {
       console.error('Failed to restore auth session:', e);
     } finally {
-      setIsLoaded(true);
+      setIsLocalLoaded(true);
     }
   }, []);
+
+  // Compute live active user (prioritizing live Clerk session)
+  const activeUser: WelNexUser | null = useMemo(() => {
+    if (clerkSignedIn && clerkUser) {
+      const clerkEmail = clerkUser.primaryEmailAddress?.emailAddress || '';
+      const clerkName = clerkUser.fullName || clerkUser.firstName || (clerkEmail ? clerkEmail.split('@')[0] : 'Investor');
+      const clerkFirstName = clerkUser.firstName || clerkName.split(' ')[0];
+      const isAdmin = isEmailAuthorizedAdmin(clerkEmail, clerkUser.publicMetadata);
+
+      return {
+        id: clerkUser.id,
+        fullName: clerkName,
+        firstName: clerkFirstName,
+        primaryEmailAddress: {
+          emailAddress: clerkEmail,
+        },
+        imageUrl: clerkUser.imageUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(clerkEmail)}&backgroundColor=C16226&textColor=FAF5EE`,
+        isAdmin,
+        role: isAdmin ? (clerkEmail.toLowerCase().trim() === 'rprohan06@gmail.com' ? 'Super Admin' : 'Admin') : 'Verified Investor',
+        publicMetadata: {
+          ...clerkUser.publicMetadata,
+          role: isAdmin ? 'admin' : ((clerkUser.publicMetadata as any)?.role || 'investor'),
+        },
+      };
+    }
+    return localUser;
+  }, [clerkSignedIn, clerkUser, localUser]);
+
+  // Sync admin auth flag to localStorage if user is admin
+  useEffect(() => {
+    if (activeUser?.isAdmin) {
+      localStorage.setItem('welnex_admin_auth', 'true');
+    }
+  }, [activeUser]);
 
   const signInWithGoogle = (customEmail?: string, customName?: string) => {
     const email = customEmail ? customEmail.trim() : 'investor@gmail.com';
@@ -100,7 +137,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const firstName = name.split(' ')[0];
     const isAdmin = isEmailAuthorizedAdmin(email);
 
-    // Profile photo: use Google user avatar style
     const avatarSeed = encodeURIComponent(email);
     const imageUrl = `https://api.dicebear.com/7.x/initials/svg?seed=${avatarSeed}&backgroundColor=C16226&textColor=FAF5EE`;
 
@@ -119,7 +155,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     };
 
-    setUser(newUser);
+    setLocalUser(newUser);
     localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(newUser));
     if (isAdmin) {
       localStorage.setItem('welnex_admin_auth', 'true');
@@ -127,10 +163,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsAuthModalOpen(false);
   };
 
-  const signOut = () => {
-    setUser(null);
+  const signOut = async () => {
+    setLocalUser(null);
     localStorage.removeItem(AUTH_STORAGE_KEY);
     localStorage.removeItem('welnex_admin_auth');
+    if (clerkSignedIn) {
+      try {
+        await clerk.signOut();
+      } catch (e) {
+        console.error('Error signing out of Clerk:', e);
+      }
+    }
   };
 
   const openAuthModal = () => setIsAuthModalOpen(true);
@@ -139,9 +182,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return (
     <AuthContext.Provider
       value={{
-        user,
-        isSignedIn: !!user,
-        isLoaded,
+        user: activeUser,
+        isSignedIn: Boolean(activeUser),
+        isLoaded: clerkLoaded && isLocalLoaded,
         isClerkConfigured,
         signInWithGoogle,
         signOut,
