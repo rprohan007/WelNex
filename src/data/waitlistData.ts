@@ -1,85 +1,38 @@
 import type { WaitlistLead } from '../types';
 
-export const INITIAL_WAITLIST_LEADS: WaitlistLead[] = [
-  {
-    id: 'lead-001',
-    fullName: 'Rohan Sharma',
-    email: 'rprohan06@gmail.com',
-    investorProfile: 'HNW / Accredited Investor',
-    interests: ['REIT', 'InvIT', 'SDI'],
-    signupDate: '2026-10-24',
-    status: 'VIP Invited'
-  },
-  {
-    id: 'lead-002',
-    fullName: 'Meera Nambiar',
-    email: 'meera.nambiar@heritage-wealth.in',
-    investorProfile: 'Retail Stock/MF Investor',
-    interests: ['REIT', 'Bond'],
-    signupDate: '2026-10-23',
-    status: 'Verified'
-  },
-  {
-    id: 'lead-003',
-    fullName: 'Arvind Singhal',
-    email: 'arvind.singhal@singhalcapital.com',
-    investorProfile: 'Institutional / Family Office',
-    interests: ['InvIT', 'SDI', 'Gold'],
-    signupDate: '2026-10-22',
-    status: 'VIP Invited'
-  },
-  {
-    id: 'lead-004',
-    fullName: 'Dr. Sanjay Gupta',
-    email: 'sanjay.gupta.md@globalcare.org',
-    investorProfile: 'NRI Investor',
-    interests: ['REIT', 'Gold', 'Bond'],
-    signupDate: '2026-10-21',
-    status: 'Verified'
-  },
-  {
-    id: 'lead-005',
-    fullName: 'Vikramaditya Iyer',
-    email: 'vikram.iyer@ca-associates.in',
-    investorProfile: 'Finance Professional / CA',
-    interests: ['SDI', 'Bond', 'InvIT'],
-    signupDate: '2026-10-20',
-    status: 'Pending Review'
-  },
-  {
-    id: 'lead-006',
-    fullName: 'Ananya Deshpande',
-    email: 'ananya.d@fintechstartups.io',
-    investorProfile: 'Curious Beginner',
-    interests: ['REIT', 'Gold'],
-    signupDate: '2026-10-19',
-    status: 'Verified'
-  },
-  {
-    id: 'lead-007',
-    fullName: 'Rajiv Malhotra',
-    email: 'rajiv.malhotra@malhotragroup.in',
-    investorProfile: 'HNW / Accredited Investor',
-    interests: ['REIT', 'InvIT', 'SDI', 'Bond'],
-    signupDate: '2026-10-18',
-    status: 'VIP Invited'
-  }
-];
+export const INITIAL_WAITLIST_LEADS: WaitlistLead[] = [];
 
 const WAITLIST_STORAGE_KEY = 'welnex_waitlist_leads';
+
+const LEGACY_MOCK_LEAD_IDS = new Set([
+  'lead-001',
+  'lead-002',
+  'lead-003',
+  'lead-004',
+  'lead-005',
+  'lead-006',
+  'lead-007'
+]);
 
 export function getWaitlistLeads(): WaitlistLead[] {
   try {
     const raw = localStorage.getItem(WAITLIST_STORAGE_KEY);
     if (!raw) {
-      localStorage.setItem(WAITLIST_STORAGE_KEY, JSON.stringify(INITIAL_WAITLIST_LEADS));
-      return INITIAL_WAITLIST_LEADS;
+      return [];
     }
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : INITIAL_WAITLIST_LEADS;
+    if (Array.isArray(parsed)) {
+      // Filter out any legacy dummy mock items if present in old localStorage
+      const cleaned = parsed.filter(lead => lead && lead.id && !LEGACY_MOCK_LEAD_IDS.has(lead.id));
+      if (cleaned.length !== parsed.length) {
+        localStorage.setItem(WAITLIST_STORAGE_KEY, JSON.stringify(cleaned));
+      }
+      return cleaned;
+    }
+    return [];
   } catch (err) {
     console.error('Error reading waitlist leads from localStorage:', err);
-    return INITIAL_WAITLIST_LEADS;
+    return [];
   }
 }
 

@@ -53,13 +53,7 @@ export function isEmailAuthorizedAdmin(email?: string, userMetadata?: { role?: s
     console.error('Error checking admin authorization:', err);
   }
 
-  // Built-in fallback authorized team emails
-  const defaultAdminEmails = [
-    'priya.sharma@welnex.in',
-    'amitav.roy@welnex.in',
-    'neha.d@welnex.in'
-  ];
-  return defaultAdminEmails.includes(normalized);
+  return false;
 }
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

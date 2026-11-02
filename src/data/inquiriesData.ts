@@ -13,61 +13,43 @@ export interface ContactInquiry {
 
 const STORAGE_KEY = 'welnex_contact_inquiries';
 
-const INITIAL_INQUIRIES: ContactInquiry[] = [
-  {
-    id: 'inq-101',
-    name: 'Vikramaditya Singhania',
-    email: 'v.singhania@apexcapital.in',
-    phone: '+91 98201 44521',
-    message: 'We are evaluating SEBI-registered Category II AIFs and SM REIT pipelines for our multi-family office in Mumbai. Would like to understand WelNex verification criteria and institutional API access.',
-    timestamp: '2026-10-24T18:30:00.000Z',
-    status: 'Unread',
-    category: 'Family Office / Institutional'
-  },
-  {
-    id: 'inq-102',
-    name: 'Dr. Ananya Deshmukh',
-    email: 'ananya.deshmukh@cardiohealth.org',
-    phone: '+91 94220 88390',
-    message: 'Hello team WelNex. I currently invest in mutual funds and fixed deposits. Wanted guidance on whether InvIT distribution yields (like IndiGrid or PGInvIT) have TDS withheld automatically, and how taxation works in the 30% slab.',
-    timestamp: '2026-10-24T14:15:00.000Z',
-    status: 'Contacted',
-    category: 'Retail & HNI Investor'
-  },
-  {
-    id: 'inq-103',
-    name: 'Rajesh K. Mehta',
-    email: 'rajesh.mehta@solargridinfra.com',
-    phone: '+91 98110 33402',
-    message: 'We are preparing a ₹250 Cr clean-energy InvIT prospectus for renewable solar assets in Gujarat & Rajasthan. We would like to explore listing asset disclosures on WelNex discovery catalogue.',
-    timestamp: '2026-10-23T11:45:00.000Z',
-    status: 'Unread',
-    category: 'Asset Sponsor / Listing'
-  },
-  {
-    id: 'inq-104',
-    name: 'Pooja Iyer',
-    email: 'pooja.iyer@wealthzenith.com',
-    phone: '+91 97410 55199',
-    message: 'Requesting a demo of the Virtual Portfolio Simulator for our team of 14 wealth managers in Bengaluru to stress-test high-yield corporate bonds.',
-    timestamp: '2026-10-22T09:20:00.000Z',
-    status: 'Resolved',
-    category: 'Advisor Demo'
-  }
-];
+export const INITIAL_INQUIRIES: ContactInquiry[] = [];
+
+const LEGACY_MOCK_INQUIRY_IDS = new Set([
+  'inq-101',
+  'inq-102',
+  'inq-103',
+  'inq-104'
+]);
 
 export function getContactInquiries(): ContactInquiry[] {
-  if (typeof window === 'undefined') return INITIAL_INQUIRIES;
+  if (typeof window === 'undefined') return [];
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_INQUIRIES));
-      return INITIAL_INQUIRIES;
+      return [];
     }
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      // Filter out legacy dummy mock items if present in old localStorage
+      const cleaned = parsed.filter(item => item && item.id && !LEGACY_MOCK_INQUIRY_IDS.has(item.id));
+      if (cleaned.length !== parsed.length) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(cleaned));
+      }
+      return cleaned;
+    }
+    return [];
   } catch (err) {
     console.error('Failed to parse contact inquiries from localStorage:', err);
-    return INITIAL_INQUIRIES;
+    return [];
+  }
+}
+
+export function saveContactInquiries(inquiries: ContactInquiry[]): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(inquiries));
+  } catch (err) {
+    console.error('Failed to save contact inquiries to localStorage:', err);
   }
 }
 
@@ -91,11 +73,7 @@ export function addContactInquiry(data: {
   };
 
   const updated = [newInquiry, ...inquiries];
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-  } catch (err) {
-    console.error('Failed to save inquiry to localStorage:', err);
-  }
+  saveContactInquiries(updated);
 
   return newInquiry;
 }
@@ -103,22 +81,14 @@ export function addContactInquiry(data: {
 export function updateInquiryStatus(id: string, status: InquiryStatus): ContactInquiry[] {
   const inquiries = getContactInquiries();
   const updated = inquiries.map((item) => (item.id === id ? { ...item, status } : item));
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-  } catch (err) {
-    console.error('Failed to update inquiry status in localStorage:', err);
-  }
+  saveContactInquiries(updated);
   return updated;
 }
 
 export function deleteInquiry(id: string): ContactInquiry[] {
   const inquiries = getContactInquiries();
   const updated = inquiries.filter((item) => item.id !== id);
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-  } catch (err) {
-    console.error('Failed to delete inquiry from localStorage:', err);
-  }
+  saveContactInquiries(updated);
   return updated;
 }
 

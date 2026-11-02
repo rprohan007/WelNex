@@ -44,7 +44,7 @@ export async function fetchContactInquiriesFromSupabase(): Promise<ContactInquir
       return getContactInquiries();
     }
 
-    if (data && data.length > 0) {
+    if (Array.isArray(data)) {
       const inquiries = data.map(mapDbRowToInquiry);
       try {
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(inquiries));

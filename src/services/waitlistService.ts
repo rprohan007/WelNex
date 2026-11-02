@@ -42,7 +42,7 @@ export async function fetchWaitlistLeadsFromSupabase(): Promise<WaitlistLead[]> 
       return getWaitlistLeads();
     }
 
-    if (data && data.length > 0) {
+    if (Array.isArray(data)) {
       const leads = data.map(mapDbRowToWaitlistLead);
       saveWaitlistLeads(leads);
       return leads;

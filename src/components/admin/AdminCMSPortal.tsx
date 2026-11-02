@@ -88,44 +88,8 @@ interface TeamAdmin {
   lastActive: string;
 }
 
-const DEFAULT_ADMINS: TeamAdmin[] = [
-  {
-    id: 'admin-01',
-    name: 'Rohan R. P.',
-    email: 'rprohan06@gmail.com',
-    role: 'Super Admin',
-    permissions: ['All Permissions', 'System RBAC', 'Listings CMS', 'Academy CMS', 'Radar Feeds', 'Waitlist Management'],
-    status: 'Active',
-    lastActive: 'Active Now'
-  },
-  {
-    id: 'admin-02',
-    name: 'Priya Sharma',
-    email: 'priya.sharma@welnex.in',
-    role: 'Investment Analyst',
-    permissions: ['Listings CMS', 'Yield Verification', 'Radar Feeds'],
-    status: 'Active',
-    lastActive: '2 hours ago'
-  },
-  {
-    id: 'admin-03',
-    name: 'Amitav Roy',
-    email: 'amitav.roy@welnex.in',
-    role: 'Senior Editor',
-    permissions: ['Academy CMS', 'Content Authoring', 'Radar Feeds'],
-    status: 'Active',
-    lastActive: 'Yesterday'
-  },
-  {
-    id: 'admin-04',
-    name: 'Neha Deshmukh',
-    email: 'neha.d@welnex.in',
-    role: 'Compliance Officer',
-    permissions: ['Regulatory Radar', 'SEBI Compliance Audit', 'Read Only'],
-    status: 'Active',
-    lastActive: '3 days ago'
-  }
-];
+const DEFAULT_ADMINS: TeamAdmin[] = [];
+const LEGACY_MOCK_ADMIN_IDS = new Set(['admin-02', 'admin-03', 'admin-04']);
 
 export const AdminCMSPortal: React.FC<AdminCMSPortalProps> = ({
   onBackToHome,
@@ -154,7 +118,18 @@ export const AdminCMSPortal: React.FC<AdminCMSPortalProps> = ({
   const [teamAdmins, setTeamAdmins] = useState<TeamAdmin[]>(() => {
     try {
       const stored = localStorage.getItem('welnex_admin_team');
-      return stored ? JSON.parse(stored) : DEFAULT_ADMINS;
+      if (stored !== null) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          const cleaned = parsed.filter(a => a && a.id && !LEGACY_MOCK_ADMIN_IDS.has(a.id));
+          if (cleaned.length !== parsed.length) {
+            localStorage.setItem('welnex_admin_team', JSON.stringify(cleaned));
+          }
+          return cleaned;
+        }
+        return [];
+      }
+      return DEFAULT_ADMINS;
     } catch {
       return DEFAULT_ADMINS;
     }
@@ -280,8 +255,8 @@ export const AdminCMSPortal: React.FC<AdminCMSPortalProps> = ({
         if (!isMounted) return;
         if (liveInvs && liveInvs.length > 0) setInvestments(liveInvs);
         if (liveTopics && liveTopics.length > 0) setAcademyTopics(liveTopics);
-        if (liveWaitlist && liveWaitlist.length > 0) setWaitlistLeads(liveWaitlist);
-        if (liveInquiries && liveInquiries.length > 0) setInquiries(liveInquiries);
+        if (Array.isArray(liveWaitlist)) setWaitlistLeads(liveWaitlist);
+        if (Array.isArray(liveInquiries)) setInquiries(liveInquiries);
       } catch (err) {
         console.warn('[AdminCMS] Live Supabase load fallback:', err);
       }
@@ -328,7 +303,13 @@ export const AdminCMSPortal: React.FC<AdminCMSPortalProps> = ({
       lastActive: 'Just now'
     };
 
-    setTeamAdmins([...teamAdmins, newAdmin]);
+    const updated = [...teamAdmins, newAdmin];
+    setTeamAdmins(updated);
+    try {
+      localStorage.setItem('welnex_admin_team', JSON.stringify(updated));
+    } catch (err) {
+      console.error('Failed to save admin to localStorage:', err);
+    }
     setNewAdminName('');
     setNewAdminEmail('');
     setIsAddAdminModalOpen(false);
@@ -340,7 +321,13 @@ export const AdminCMSPortal: React.FC<AdminCMSPortalProps> = ({
       return;
     }
     if (confirm(`Revoke admin privileges for ${email}?`)) {
-      setTeamAdmins(teamAdmins.filter(a => a.id !== id));
+      const updated = teamAdmins.filter(a => a.id !== id);
+      setTeamAdmins(updated);
+      try {
+        localStorage.setItem('welnex_admin_team', JSON.stringify(updated));
+      } catch (err) {
+        console.error('Failed to delete admin from localStorage:', err);
+      }
     }
   };
 
