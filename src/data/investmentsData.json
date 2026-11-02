@@ -1,0 +1,1421 @@
+[
+  {
+    "id": "embassy-office-parks-reit",
+    "name": "Embassy Office Parks REIT",
+    "symbol": "EMBASSY",
+    "sponsor": "Embassy Group & Blackstone",
+    "priorityTier": "Priority 1",
+    "category": "REIT",
+    "subCategory": "Commercial Office",
+    "accessModel": "Direct Public",
+    "sebiRegulated": true,
+    "regulatoryBadge": "SEBI Regulated (REIT Regulations 2014)",
+    "indicativeYield": "7.40% p.a.",
+    "yieldType": "Distribution Yield",
+    "minInvestment": "₹342 (1 Unit on NSE/BSE)",
+    "minInvestmentNumeric": 342,
+    "tenure": "Perpetual (Exchange Traded)",
+    "riskLevel": "Moderate",
+    "distributionFrequency": "Quarterly",
+    "portfolioScale": "45.4 MSF Leasable Area",
+    "occupancy": "88.6% Grade-A",
+    "tagline": "India's First and Largest Listed Commercial Real Estate Investment Trust",
+    "overview": "Embassy Office Parks REIT is India's premier commercial office portfolio spanning Bengaluru, Mumbai, Pune, and the National Capital Region (NCR). The portfolio comprises 14 institutional-grade office parks hosting over 240 marquee blue-chip multinational tenants.",
+    "strategy": "Long-term contractual leases with 6 to 9 year Weighted Average Lease Expiry (WALE) and built-in 10-15% contractual rent escalation clauses every 3 years. Capital allocation prioritizes Grade-A green-certified campuses with full integration of retail amenities and renewable energy infrastructure.",
+    "underlyingAssets": [
+      {
+        "id": "emb-asset-1",
+        "name": "Embassy Manyata Business Park",
+        "location": "Hebbal, Bengaluru, Karnataka",
+        "type": "Integrated IT/ITeS Office Park",
+        "areaOrScale": "15.2 MSF Operational Area",
+        "tenantsOrDetails": "Anchored by IBM, Cognizant, Nokia, Rolls Royce & Target",
+        "valuationShare": "38.5% of Portfolio GAV",
+        "imageAccent": "from-amber-600/30 to-copper-600/20"
+      },
+      {
+        "id": "emb-asset-2",
+        "name": "Express Towers",
+        "location": "Nariman Point, Mumbai, Maharashtra",
+        "type": "Central Business District Iconic High-Rise",
+        "areaOrScale": "0.5 MSF Super Built-Up Area",
+        "tenantsOrDetails": "Anchored by Warburg Pincus, Blackstone India, McKinsey & Co",
+        "valuationShare": "8.2% of Portfolio GAV",
+        "imageAccent": "from-copper-600/30 to-amber-700/20"
+      },
+      {
+        "id": "emb-asset-3",
+        "name": "Embassy TechVillage",
+        "location": "Outer Ring Road (ORR), Bengaluru",
+        "type": "Flagship SEZ & Non-SEZ Tech Campus",
+        "areaOrScale": "9.6 MSF Leasable Area",
+        "tenantsOrDetails": "Anchored by Cisco, Sony, Wells Fargo & JP Morgan",
+        "valuationShare": "26.4% of Portfolio GAV",
+        "imageAccent": "from-stone-600/30 to-copper-600/20"
+      },
+      {
+        "id": "emb-asset-4",
+        "name": "Embassy Quadron",
+        "location": "Hinjawadi Phase-II, Pune, Maharashtra",
+        "type": "Special Economic Zone Tech Hub",
+        "areaOrScale": "1.9 MSF Leasable Area",
+        "tenantsOrDetails": "Anchored by eClerx, Hinduja Tech, Mindcrest",
+        "valuationShare": "6.8% of Portfolio GAV",
+        "imageAccent": "from-amber-700/30 to-stone-700/20"
+      }
+    ],
+    "sponsorProfile": {
+      "name": "Embassy Group & Blackstone",
+      "background": "Co-sponsored by Embassy Group, a leading Indian property developer with 30+ years of operational history, and Blackstone, one of the world's largest alternative asset managers with over $1 Trillion in global AUM.",
+      "trackRecord": "Over 62 MSF commercial space developed and delivered across key Indian metropolitan micro-markets.",
+      "institutionalBackers": [
+        "Blackstone Real Estate",
+        "Capital Group",
+        "GIC Singapore",
+        "SBI Mutual Fund"
+      ]
+    },
+    "riskFactors": [
+      {
+        "title": "Tenant Concentration & Hybrid Work Adoption",
+        "description": "Top 10 tenants represent approximately 35% of total gross rental revenues. A prolonged macroeconomic slowdown in global IT spending could moderate expansion leasing.",
+        "severity": "Moderate"
+      },
+      {
+        "title": "Interest Rate Sensitivity",
+        "description": "Fluctuations in the Reserve Bank of India repo rate directly impact cost of debt refinancing and investor yield spread comparisons against 10Y Indian G-Sec.",
+        "severity": "Moderate"
+      },
+      {
+        "title": "Lease Expiry & Vacancy Re-letting",
+        "description": "Approximately 7-10% of leases expire annually, requiring ongoing tenant re-letting or tenant improvement capital expenditure.",
+        "severity": "Low"
+      }
+    ],
+    "liquidityProfile": "High liquidity. Traded daily on the National Stock Exchange (NSE) and Bombay Stock Exchange (BSE) with average daily trading volume exceeding ₹25 Crores.",
+    "taxImplications": "Distributions are split into Dividend, Interest, and Return of Capital (RoC). RoC distributions receive preferential deferred capital gains treatment under Indian Finance Act provisions.",
+    "officialLinks": {
+      "sebiFilingUrl": "https://www.sebi.gov.in",
+      "exchangeUrl": "https://www.nseindia.com/get-quotes/equity?symbol=EMBASSY"
+    },
+    "tags": [
+      "REIT",
+      "Commercial Office",
+      "Bangalore",
+      "Mumbai",
+      "Blackstone",
+      "Quarterly Yield"
+    ],
+    "symbolTicker": "EMBASSY",
+    "priceMode": "LIVE_MARKET",
+    "currentPrice": 388.5,
+    "priceChange24h": 4.8,
+    "priceChangePercent24h": 1.25,
+    "dayHigh": 391.2,
+    "dayLow": 384.1,
+    "lastPriceUpdate": "2026-10-27T15:30:00.000Z",
+    "yieldPayoutFrequency": "Quarterly"
+  },
+  {
+    "id": "mindspace-business-parks-reit",
+    "name": "Mindspace Business Parks REIT",
+    "symbol": "MINDSPACE",
+    "sponsor": "K Raheja Corp & Blackstone",
+    "priorityTier": "Priority 1",
+    "category": "REIT",
+    "subCategory": "Commercial Office",
+    "accessModel": "Direct Public",
+    "sebiRegulated": true,
+    "regulatoryBadge": "SEBI Regulated (REIT Regulations 2014)",
+    "indicativeYield": "7.15% p.a.",
+    "yieldType": "Distribution Yield",
+    "minInvestment": "₹348 (1 Unit on NSE/BSE)",
+    "minInvestmentNumeric": 348,
+    "tenure": "Perpetual (Exchange Traded)",
+    "riskLevel": "Moderate",
+    "distributionFrequency": "Quarterly",
+    "portfolioScale": "32.2 MSF Leasable Area",
+    "occupancy": "89.4% Grade-A",
+    "tagline": "Grade-A West and South India Office Real Estate Powerhouse",
+    "overview": "Mindspace Business Parks REIT owns a premium portfolio of 5 integrated business parks and 5 independent offices across Mumbai Metropolitan Region (MMR), Pune, Hyderabad, and Chennai.",
+    "strategy": "Focused dominance in Western and Southern India micro-markets with institutional campus ecosystems offering captive hotels, retail promenades, and direct metro connectivity.",
+    "underlyingAssets": [
+      {
+        "id": "mind-asset-1",
+        "name": "Mindspace Madhapur",
+        "location": "HITEC City, Hyderabad, Telangana",
+        "type": "Mega SEZ & Commercial Park",
+        "areaOrScale": "13.1 MSF Completed Area",
+        "tenantsOrDetails": "Anchored by Qualcomm, Verizon, AMD, Novartis & Accenture",
+        "valuationShare": "42.1% of Portfolio GAV",
+        "imageAccent": "from-copper-700/30 to-amber-600/20"
+      },
+      {
+        "id": "mind-asset-2",
+        "name": "Mindspace Airoli East & West",
+        "location": "Navi Mumbai, Maharashtra",
+        "type": "Integrated IT Corridor Business Park",
+        "areaOrScale": "11.8 MSF Combined Area",
+        "tenantsOrDetails": "Anchored by Accenture, Cognizant, Wipro, L&T Infotech",
+        "valuationShare": "34.5% of Portfolio GAV",
+        "imageAccent": "from-stone-700/30 to-copper-600/20"
+      },
+      {
+        "id": "mind-asset-3",
+        "name": "The Square BKC",
+        "location": "Bandra Kurla Complex, Mumbai",
+        "type": "Ultra-Prime Commercial Office Building",
+        "areaOrScale": "0.15 MSF Premium Office Space",
+        "tenantsOrDetails": "Anchored by institutional financial advisory and private equity tenants",
+        "valuationShare": "5.6% of Portfolio GAV",
+        "imageAccent": "from-amber-600/30 to-stone-600/20"
+      }
+    ],
+    "sponsorProfile": {
+      "name": "K Raheja Corp",
+      "background": "One of India's most respected conglomerates with over four decades of excellence across residential, commercial, hospitality, and retail asset classes.",
+      "trackRecord": "Over 50 MSF of Grade-A commercial real estate delivered with consistent green building certifications.",
+      "institutionalBackers": [
+        "Blackstone Group",
+        "Platinum Orchid (ADIA)",
+        "Nippon Life India",
+        "HDFC AMC"
+      ]
+    },
+    "riskFactors": [
+      {
+        "title": "Regional Concentration in Hyderabad and MMR",
+        "description": "Over 75% of portfolio net operating income is generated from the Hyderabad and Navi Mumbai micro-markets.",
+        "severity": "Moderate"
+      },
+      {
+        "title": "IT/ITeS Sector Dominance",
+        "description": "Technology sector accounts for over 50% of tenant gross leasable area.",
+        "severity": "Moderate"
+      },
+      {
+        "title": "Refinancing and Interest Rates",
+        "description": "Moderate leverage with Net Debt to GAV of ~22%, well below the SEBI statutory ceiling of 49%.",
+        "severity": "Low"
+      }
+    ],
+    "liquidityProfile": "High liquidity. Traded continuously on NSE and BSE with robust institutional participation.",
+    "taxImplications": "Significant portion of quarterly cash distributions distributed as dividend from SPVs under old tax regime (largely tax-exempt in unit-holder hands).",
+    "officialLinks": {
+      "sebiFilingUrl": "https://www.sebi.gov.in",
+      "exchangeUrl": "https://www.nseindia.com/get-quotes/equity?symbol=MINDSPACE"
+    },
+    "tags": [
+      "REIT",
+      "Commercial Office",
+      "Hyderabad",
+      "Mumbai",
+      "K Raheja Corp",
+      "Quarterly Yield"
+    ],
+    "symbolTicker": "MINDSPACE",
+    "priceMode": "LIVE_MARKET",
+    "currentPrice": 345.2,
+    "priceChange24h": 2.3,
+    "priceChangePercent24h": 0.67,
+    "dayHigh": 347.8,
+    "dayLow": 342.5,
+    "lastPriceUpdate": "2026-10-27T15:30:00.000Z",
+    "yieldPayoutFrequency": "Quarterly"
+  },
+  {
+    "id": "brookfield-india-reit",
+    "name": "Brookfield India Real Estate Trust",
+    "symbol": "BIRET",
+    "sponsor": "Brookfield Asset Management",
+    "priorityTier": "Priority 1",
+    "category": "REIT",
+    "subCategory": "Commercial Office",
+    "accessModel": "Direct Public",
+    "sebiRegulated": true,
+    "regulatoryBadge": "SEBI Regulated (REIT Regulations 2014)",
+    "indicativeYield": "8.10% p.a.",
+    "yieldType": "Distribution Yield",
+    "minInvestment": "₹260 (1 Unit on NSE/BSE)",
+    "minInvestmentNumeric": 260,
+    "tenure": "Perpetual (Exchange Traded)",
+    "riskLevel": "Moderate",
+    "distributionFrequency": "Quarterly",
+    "portfolioScale": "28.7 MSF Leasable Area",
+    "occupancy": "85.2% Grade-A",
+    "tagline": "India's Only 100% Institutionally Managed Pure-Play Office REIT",
+    "overview": "Brookfield India REIT is sponsored by an affiliate of Brookfield Asset Management, one of the globe's largest real estate investors. The trust manages critical campus office properties in Mumbai, Gurugram, Noida, and Kolkata.",
+    "strategy": "Aggressive organic pipeline additions alongside accretive acquisitions of sponsor pipeline assets in high-growth knowledge corridors across India.",
+    "underlyingAssets": [
+      {
+        "id": "brk-asset-1",
+        "name": "Candor TechSpace G2",
+        "location": "Sector 21, Gurugram, Haryana",
+        "type": "Institutional SEZ Campus",
+        "areaOrScale": "3.9 MSF Operational Area",
+        "tenantsOrDetails": "Anchored by Amdocs, Sapient, Royal Bank of Scotland & Accenture",
+        "valuationShare": "28.4% of Portfolio GAV",
+        "imageAccent": "from-amber-700/30 to-copper-600/20"
+      },
+      {
+        "id": "brk-asset-2",
+        "name": "Candor TechSpace N2",
+        "location": "Sector 135, Noida, Uttar Pradesh",
+        "type": "Integrated Knowledge Campus",
+        "areaOrScale": "4.5 MSF Operational Area",
+        "tenantsOrDetails": "Anchored by MetLife, Genpact, Conduent, Barclays",
+        "valuationShare": "24.1% of Portfolio GAV",
+        "imageAccent": "from-stone-700/30 to-amber-700/20"
+      },
+      {
+        "id": "brk-asset-3",
+        "name": "Downtown Powai",
+        "location": "Powai, Mumbai, Maharashtra",
+        "type": "Mixed-Use Commercial & Tech Enclave",
+        "areaOrScale": "2.7 MSF High-Street Commercial",
+        "tenantsOrDetails": "Anchored by Nomura, Credit Suisse, Deloitte",
+        "valuationShare": "27.5% of Portfolio GAV",
+        "imageAccent": "from-copper-600/30 to-stone-600/20"
+      }
+    ],
+    "sponsorProfile": {
+      "name": "Brookfield Asset Management",
+      "background": "Global alternative asset management titan with over 120 years of heritage and $900B+ assets under management globally.",
+      "trackRecord": "Global footprint operating across 30+ countries in infrastructure, renewable power, private equity, and real estate.",
+      "institutionalBackers": [
+        "Brookfield Sponsor",
+        "GIC Private Limited",
+        "ICICI Prudential AMC",
+        "Mirae Asset"
+      ]
+    },
+    "riskFactors": [
+      {
+        "title": "Vacancy in Select NCR Assets",
+        "description": "Noida and Gurugram campuses have experienced temporary lease expiries requiring ongoing active leasing initiatives.",
+        "severity": "Moderate"
+      },
+      {
+        "title": "Debt and Leverage Profile",
+        "description": "Net Debt to GAV of ~33% following acquisition of marquee Powai portfolio in partnership with GIC.",
+        "severity": "Moderate"
+      },
+      {
+        "title": "Currency and Macroeconomic Trends",
+        "description": "Global corporate real estate footprint reductions could impact lease tenure renewal rates.",
+        "severity": "Low"
+      }
+    ],
+    "liquidityProfile": "High liquidity on NSE and BSE.",
+    "taxImplications": "Distributions feature high Return of Capital (RoC) and interest components.",
+    "officialLinks": {
+      "sebiFilingUrl": "https://www.sebi.gov.in",
+      "exchangeUrl": "https://www.nseindia.com/get-quotes/equity?symbol=BIRET"
+    },
+    "tags": [
+      "REIT",
+      "Commercial Office",
+      "NCR",
+      "Mumbai",
+      "Brookfield",
+      "Quarterly Yield"
+    ],
+    "symbolTicker": "BIRET",
+    "priceMode": "LIVE_MARKET",
+    "currentPrice": 266.1,
+    "priceChange24h": -1.4,
+    "priceChangePercent24h": -0.52,
+    "dayHigh": 268.5,
+    "dayLow": 264.8,
+    "lastPriceUpdate": "2026-10-27T15:30:00.000Z",
+    "yieldPayoutFrequency": "Quarterly"
+  },
+  {
+    "id": "nexus-select-trust-reit",
+    "name": "Nexus Select Trust REIT",
+    "symbol": "NXST",
+    "sponsor": "Blackstone Real Estate",
+    "priorityTier": "Priority 1",
+    "category": "REIT",
+    "subCategory": "Retail Malls",
+    "accessModel": "Direct Public",
+    "sebiRegulated": true,
+    "regulatoryBadge": "SEBI Regulated (REIT Regulations 2014)",
+    "indicativeYield": "7.85% p.a.",
+    "yieldType": "Distribution Yield",
+    "minInvestment": "₹138 (1 Unit on NSE/BSE)",
+    "minInvestmentNumeric": 138,
+    "tenure": "Perpetual (Exchange Traded)",
+    "riskLevel": "Moderate",
+    "distributionFrequency": "Quarterly",
+    "portfolioScale": "9.9 MSF Grade-A Retail",
+    "occupancy": "96.4% Prime Retail",
+    "tagline": "India's First and Only Pure-Play Retail Shopping Mall REIT",
+    "overview": "Nexus Select Trust is India's leading owner of institutional Grade-A consumption centers, operating 17 premier shopping centers across 14 cities including Bengaluru, Delhi, Chandigarh, Navi Mumbai, and Pune.",
+    "strategy": "Capitalizing on the demographic boom of Indian discretionary consumption. Over 96% occupancy with turnover-based minimum guarantee lease models providing inflation protection through retail store sales royalties.",
+    "underlyingAssets": [
+      {
+        "id": "nex-asset-1",
+        "name": "Nexus Select CITYWALK",
+        "location": "Saket, New Delhi",
+        "type": "Iconic Luxury & Lifestyle Retail Destination",
+        "areaOrScale": "0.5 MSF Super Prime Retail Area",
+        "tenantsOrDetails": "Anchored by Zara, H&M, Sephora, Apple Premium Reseller, PVR INOX",
+        "valuationShare": "22.4% of Portfolio GAV",
+        "imageAccent": "from-copper-600/30 to-amber-700/20"
+      },
+      {
+        "id": "nex-asset-2",
+        "name": "Nexus Elante Mall",
+        "location": "Industrial Area, Chandigarh",
+        "type": "Regional Mega Consumption Center",
+        "areaOrScale": "1.2 MSF Leasable Mall & Office Space",
+        "tenantsOrDetails": "Anchored by Marks & Spencer, Lifestyle, Shoppers Stop, PVR Luxe",
+        "valuationShare": "18.6% of Portfolio GAV",
+        "imageAccent": "from-amber-600/30 to-stone-700/20"
+      },
+      {
+        "id": "nex-asset-3",
+        "name": "Nexus Koramangala",
+        "location": "Koramangala, Bengaluru, Karnataka",
+        "type": "High-Footfall Urban Lifestyle Mall",
+        "areaOrScale": "0.4 MSF Prime Core Retail",
+        "tenantsOrDetails": "Anchored by PVR Cinemas, Uniqlo, Westside, Starbucks",
+        "valuationShare": "12.8% of Portfolio GAV",
+        "imageAccent": "from-stone-600/30 to-copper-600/20"
+      }
+    ],
+    "sponsorProfile": {
+      "name": "Blackstone Real Estate",
+      "background": "Global private equity and real estate investment giant with unrivaled experience building institutional retail platforms worldwide.",
+      "trackRecord": "Consolidated 17 disjointed mall properties into a unified, national institutional brand with 130M+ annual consumer footfalls.",
+      "institutionalBackers": [
+        "Blackstone Real Estate",
+        "Prusik Investment Management",
+        "Morgan Stanley",
+        "Tata MF"
+      ]
+    },
+    "riskFactors": [
+      {
+        "title": "E-Commerce & Digital Consumption Shift",
+        "description": "Rapid growth of quick-commerce and online fashion platforms could exert long-term pressure on lower-tier non-flagship retail tenants.",
+        "severity": "Moderate"
+      },
+      {
+        "title": "Tenant Turnover Rent Variations",
+        "description": "Around 15-20% of revenues derive from tenant sales percentage overage; retail footfall fluctuations impact distributions directly.",
+        "severity": "Low"
+      },
+      {
+        "title": "Discretionary Spending Cycles",
+        "description": "Inflationary slowdowns in consumer lifestyle spend can moderate rental renewal uplifts.",
+        "severity": "Moderate"
+      }
+    ],
+    "liquidityProfile": "High liquidity. Traded continuously on NSE and BSE.",
+    "taxImplications": "Regular quarterly distributions with significant dividend component from debt-free mall SPVs.",
+    "officialLinks": {
+      "sebiFilingUrl": "https://www.sebi.gov.in",
+      "exchangeUrl": "https://www.nseindia.com/get-quotes/equity?symbol=NXST"
+    },
+    "tags": [
+      "REIT",
+      "Retail Malls",
+      "Consumption",
+      "Blackstone",
+      "Delhi",
+      "Quarterly Yield"
+    ],
+    "symbolTicker": "NXST",
+    "priceMode": "LIVE_MARKET",
+    "currentPrice": 142.3,
+    "priceChange24h": 1.85,
+    "priceChangePercent24h": 1.32,
+    "dayHigh": 143.5,
+    "dayLow": 140.2,
+    "lastPriceUpdate": "2026-10-27T15:30:00.000Z",
+    "yieldPayoutFrequency": "Quarterly"
+  },
+  {
+    "id": "indigrid-invit",
+    "name": "IndiGrid Infrastructure Trust",
+    "symbol": "INDIGRID",
+    "sponsor": "KKR & Sterlite Power",
+    "priorityTier": "Priority 1",
+    "category": "InvIT",
+    "subCategory": "Power Transmission",
+    "accessModel": "Direct Public",
+    "sebiRegulated": true,
+    "regulatoryBadge": "SEBI Regulated (InvIT Regulations 2014)",
+    "indicativeYield": "11.20% p.a.",
+    "yieldType": "Distribution Yield",
+    "minInvestment": "₹136 (1 Unit on NSE/BSE)",
+    "minInvestmentNumeric": 136,
+    "tenure": "Perpetual (Exchange Traded)",
+    "riskLevel": "Moderate",
+    "distributionFrequency": "Quarterly",
+    "portfolioScale": "19 Interstate Transmission Lines & 4 Solar Assets",
+    "occupancy": "99.7% System Availability",
+    "tagline": "India's First and Leading Power Sector Infrastructure Investment Trust",
+    "overview": "India Grid Trust (IndiGrid) owns and operates interstate power transmission lines and utility-scale solar projects across 19 Indian states. The portfolio represents over 8,400 circuit kilometers of high-voltage transmission lines.",
+    "strategy": "Operates under 35-year Build-Own-Operate-Maintain (BOOM) concession agreements where revenues are determined by network availability rather than volume of power transmitted (Point of Connection mechanism).",
+    "underlyingAssets": [
+      {
+        "id": "ind-asset-1",
+        "name": "Bhopal Dhule Transmission Company (BDTCL)",
+        "location": "Madhya Pradesh & Maharashtra",
+        "type": "765kV & 400kV Interstate Power Corridors",
+        "areaOrScale": "944 Circuit Kilometers",
+        "tenantsOrDetails": "Central Transmission Utility of India (CTUIL) under POC pool mechanism",
+        "valuationShare": "21.3% of Portfolio AUM",
+        "imageAccent": "from-amber-600/30 to-copper-600/20"
+      },
+      {
+        "id": "ind-asset-2",
+        "name": "Jabalpur Transmission Company (JTCL)",
+        "location": "Madhya Pradesh & Chhattisgarh",
+        "type": "765kV Double Circuit Heavy Power Corridor",
+        "areaOrScale": "992 Circuit Kilometers",
+        "tenantsOrDetails": "Essential grid corridor transmitting baseload power to Western India",
+        "valuationShare": "18.8% of Portfolio AUM",
+        "imageAccent": "from-copper-700/30 to-stone-700/20"
+      },
+      {
+        "id": "ind-asset-3",
+        "name": "Kallam Solar Photovoltaic Facility",
+        "location": "Osmanabad, Maharashtra",
+        "type": "Utility-Scale Solar Energy Facility",
+        "areaOrScale": "100 MW AC Solar Generation",
+        "tenantsOrDetails": "Long-term 25-Year PPA with Solar Energy Corporation of India (SECI)",
+        "valuationShare": "9.5% of Portfolio AUM",
+        "imageAccent": "from-amber-600/30 to-stone-600/20"
+      }
+    ],
+    "sponsorProfile": {
+      "name": "KKR & Sterlite Power",
+      "background": "Backed by KKR, a leading global investment firm with over $500 Billion in AUM, and Sterlite Power, a pioneer in power transmission infrastructure.",
+      "trackRecord": "Maintains 99.7%+ transmission network availability continuously across 7+ operational years.",
+      "institutionalBackers": [
+        "KKR Infrastructure",
+        "GIC Singapore",
+        "Ontario Teachers' Pension Plan (OTPP)",
+        "L&T MF"
+      ]
+    },
+    "riskFactors": [
+      {
+        "title": "Grid Disconnection or Force Majeure",
+        "description": "Extreme weather events like cyclones or severe storms can damage physical transmission towers, though covered by comprehensive business interruption insurance.",
+        "severity": "Low"
+      },
+      {
+        "title": "Counterparty Offtaker Risk",
+        "description": "Revenues are collected via the National Point of Connection (POC) pool managed by sovereign CTUIL, virtually insulating IndiGrid from state discom payment defaults.",
+        "severity": "Low"
+      },
+      {
+        "title": "Interest Rate and Refinancing Cycle",
+        "description": "Substantial long-term debt profile; higher benchmark lending rates raise interest expenditure upon bond rollover.",
+        "severity": "Moderate"
+      }
+    ],
+    "liquidityProfile": "High liquidity. Traded daily on NSE and BSE with designated market makers.",
+    "taxImplications": "Distributions feature a substantial interest and Return of Capital (RoC) proportion with attractive post-tax yields.",
+    "officialLinks": {
+      "sebiFilingUrl": "https://www.sebi.gov.in",
+      "exchangeUrl": "https://www.nseindia.com/get-quotes/equity?symbol=INDIGRID"
+    },
+    "tags": [
+      "InvIT",
+      "Power Transmission",
+      "KKR",
+      "Solar",
+      "High Yield",
+      "Quarterly Yield"
+    ],
+    "symbolTicker": "INDIGRID",
+    "priceMode": "LIVE_MARKET",
+    "currentPrice": 133.25,
+    "priceChange24h": -0.45,
+    "priceChangePercent24h": -0.34,
+    "dayHigh": 134.5,
+    "dayLow": 132.8,
+    "lastPriceUpdate": "2026-10-27T15:30:00.000Z",
+    "yieldPayoutFrequency": "Quarterly"
+  },
+  {
+    "id": "powergrid-invit",
+    "name": "PowerGrid Infrastructure Investment Trust",
+    "symbol": "PGINVIT",
+    "sponsor": "Power Grid Corporation of India (Govt of India)",
+    "priorityTier": "Priority 1",
+    "category": "InvIT",
+    "subCategory": "Power Transmission",
+    "accessModel": "Direct Public",
+    "sebiRegulated": true,
+    "regulatoryBadge": "SEBI Regulated (Sovereign PSU Sponsored)",
+    "indicativeYield": "10.40% p.a.",
+    "yieldType": "Distribution Yield",
+    "minInvestment": "₹94 (1 Unit on NSE/BSE)",
+    "minInvestmentNumeric": 94,
+    "tenure": "Perpetual (Exchange Traded)",
+    "riskLevel": "Low",
+    "distributionFrequency": "Quarterly",
+    "portfolioScale": "5 Transmission SPVs across 11 States",
+    "occupancy": "99.8% Availability",
+    "tagline": "Sovereign PSU-Backed Critical Interstate Transmission Grid",
+    "overview": "PowerGrid InvIT is the only Indian infrastructure trust sponsored directly by a Maharatna Public Sector Enterprise (Power Grid Corporation of India, under the Ministry of Power).",
+    "strategy": "Ultra-low-risk asset portfolio consisting of completed, operational interstate power transmission lines with 30-year residual concession lives and sovereign payment clearing mechanisms.",
+    "underlyingAssets": [
+      {
+        "id": "pg-asset-1",
+        "name": "POWERGRID Warora Transmission (PWTL)",
+        "location": "Maharashtra, Telangana & Madhya Pradesh",
+        "type": "765kV High-Capacity Power Corridor",
+        "areaOrScale": "1,028 Circuit Kilometers",
+        "tenantsOrDetails": "Central Transmission Utility POC pool guaranteed by Govt of India framework",
+        "valuationShare": "28.5% of Portfolio GAV",
+        "imageAccent": "from-copper-600/30 to-amber-700/20"
+      },
+      {
+        "id": "pg-asset-2",
+        "name": "POWERGRID Parbati Koldam Transmission (PKTL)",
+        "location": "Himachal Pradesh & Punjab",
+        "type": "Mountainous Hydro Evacuation Grid",
+        "areaOrScale": "458 Circuit Kilometers",
+        "tenantsOrDetails": "Evacuating clean hydroelectric power from Parbati and Koldam dams",
+        "valuationShare": "19.2% of Portfolio GAV",
+        "imageAccent": "from-stone-700/30 to-copper-600/20"
+      }
+    ],
+    "sponsorProfile": {
+      "name": "Power Grid Corporation of India Limited (PGCIL)",
+      "background": "Maharatna Central Public Sector Enterprise owning and transmitting over 85% of India's total interstate electrical energy.",
+      "trackRecord": "CRISIL AAA and ICRA AAA rated sovereign pedigree with zero default record across decades.",
+      "institutionalBackers": [
+        "Govt of India (Ministry of Power)",
+        "Nippon India MF",
+        "SBI Life Insurance",
+        "HDFC Life"
+      ]
+    },
+    "riskFactors": [
+      {
+        "title": "Statutory Concession Sunset",
+        "description": "Concession agreements expire between 2049 and 2055; capital must be redeployed or asset extended.",
+        "severity": "Low"
+      },
+      {
+        "title": "Inflation Indexation Cap",
+        "description": "Tariffs are fixed annuity lines without direct inflation indexation adjustments.",
+        "severity": "Low"
+      },
+      {
+        "title": "Interest Rate Changes",
+        "description": "Moderate impact on debt refinancing across 5-year rollover windows.",
+        "severity": "Low"
+      }
+    ],
+    "liquidityProfile": "High liquidity. Traded on NSE and BSE.",
+    "taxImplications": "Distributions contain a high interest component with attractive net post-tax returns.",
+    "officialLinks": {
+      "sebiFilingUrl": "https://www.sebi.gov.in",
+      "exchangeUrl": "https://www.nseindia.com/get-quotes/equity?symbol=PGINVIT"
+    },
+    "tags": [
+      "InvIT",
+      "PowerGrid",
+      "PSU",
+      "Sovereign",
+      "Safe Yield",
+      "Quarterly Yield"
+    ],
+    "symbolTicker": "PGINVIT",
+    "priceMode": "LIVE_MARKET",
+    "currentPrice": 98.7,
+    "priceChange24h": 0.85,
+    "priceChangePercent24h": 0.87,
+    "dayHigh": 99.4,
+    "dayLow": 97.6,
+    "lastPriceUpdate": "2026-10-27T15:30:00.000Z",
+    "yieldPayoutFrequency": "Quarterly"
+  },
+  {
+    "id": "tata-capital-ncd-aaa",
+    "name": "Tata Capital Financial Services Secured NCDs",
+    "symbol": "TATACAP",
+    "sponsor": "Tata Sons (Tata Group)",
+    "priorityTier": "Priority 1",
+    "category": "Corporate Bond",
+    "subCategory": "Senior Secured Debt",
+    "accessModel": "Direct Public",
+    "sebiRegulated": true,
+    "regulatoryBadge": "SEBI Regulated (CRISIL AAA / ICRA AAA)",
+    "indicativeYield": "8.85% p.a.",
+    "yieldType": "Fixed Annual Coupon",
+    "minInvestment": "₹10,000 (10 Bonds of ₹1,000)",
+    "minInvestmentNumeric": 10000,
+    "tenure": "3 Years to 5 Years",
+    "riskLevel": "Low",
+    "distributionFrequency": "Annual / Monthly Options",
+    "portfolioScale": "₹1,50,000 Cr+ Consolidated Tata Capital Assets",
+    "occupancy": "100% Asset Coverage Ratio",
+    "tagline": "Highest Credit Safety Senior Secured Non-Convertible Debentures",
+    "overview": "Senior secured non-convertible debentures issued by Tata Capital Financial Services, the flagship retail and corporate financing arm of Tata Sons. Rated CRISIL AAA/Stable and ICRA AAA/Stable.",
+    "strategy": "Proceeds fund high-quality retail loan books, SME supply-chain financing, and green vehicle financing with minimum 1.1x first-ranking asset security charge held by a SEBI-registered Debenture Trustee.",
+    "underlyingAssets": [
+      {
+        "id": "tc-asset-1",
+        "name": "Secured Retail Mortgage & SME Receivables Pool",
+        "location": "Pan-India Metropolitan & Tier-2 Centers",
+        "type": "Senior Secured Charge on Corporate Assets",
+        "areaOrScale": "1.15x Security Cover Held by Vistra ITCL (Trustee)",
+        "tenantsOrDetails": "Retail prime home loan mortgages and verified SME hypothecated assets",
+        "valuationShare": "100% Secured",
+        "imageAccent": "from-copper-700/30 to-amber-600/20"
+      }
+    ],
+    "sponsorProfile": {
+      "name": "Tata Sons (Tata Group)",
+      "background": "India's largest and most storied industrial conglomerate with over 150 years of brand trust, operating in 100+ countries.",
+      "trackRecord": "Gold standard of corporate governance and creditor protection in India.",
+      "institutionalBackers": [
+        "Tata Sons Private Limited",
+        "Life Insurance Corporation of India (LIC)",
+        "State Bank of India"
+      ]
+    },
+    "riskFactors": [
+      {
+        "title": "Credit Downgrade Risk",
+        "description": "Extremely low probability given Tata parentage, but any structural deterioration in NBFC asset quality could impact trading prices.",
+        "severity": "Low"
+      },
+      {
+        "title": "Premature Redemption Liquidity",
+        "description": "Secondary market trading liquidity on the exchange order book may require small bid-ask spread adjustments for immediate liquidation.",
+        "severity": "Moderate"
+      },
+      {
+        "title": "Inflation Opportunity Cost",
+        "description": "Fixed coupon of 8.85% does not adjust upward if Indian macro inflation spikes unexpectedly.",
+        "severity": "Low"
+      }
+    ],
+    "liquidityProfile": "Medium liquidity. Listed on the NSE/BSE debt market segment and accessible via SEBI Online Bond Platform Providers (OBPP).",
+    "taxImplications": "Coupon income is taxed as 'Income from Other Sources' at investor's marginal income tax slab rate.",
+    "officialLinks": {
+      "sebiFilingUrl": "https://www.sebi.gov.in",
+      "exchangeUrl": "https://www.nseindia.com"
+    },
+    "tags": [
+      "Corporate Bond",
+      "Tata Group",
+      "CRISIL AAA",
+      "Senior Secured",
+      "Fixed Income"
+    ],
+    "symbolTicker": "TATACAP",
+    "priceMode": "LIVE_MARKET",
+    "currentPrice": 1012.5,
+    "priceChange24h": 1.5,
+    "priceChangePercent24h": 0.15,
+    "dayHigh": 1015,
+    "dayLow": 1010,
+    "lastPriceUpdate": "2026-10-27T15:30:00.000Z",
+    "yieldPayoutFrequency": "Annual"
+  },
+  {
+    "id": "grip-ev-lease-sdi",
+    "name": "CleanMobility Commercial EV Fleet Securitized Debt (SDI)",
+    "symbol": "SDI-EV04",
+    "sponsor": "Grip Invest & Magenta Mobility",
+    "priorityTier": "Priority 1",
+    "category": "Corporate Bond",
+    "subCategory": "Securitized Debt Instruments (SDI)",
+    "accessModel": "Direct Public",
+    "sebiRegulated": true,
+    "regulatoryBadge": "SEBI Regulated (SDI Regulations 2008 / Listed on BSE)",
+    "indicativeYield": "12.75% p.a.",
+    "yieldType": "Pre-Tax IRR (Monthly Amortization)",
+    "minInvestment": "₹25,000",
+    "minInvestmentNumeric": 25000,
+    "tenure": "24 Months",
+    "riskLevel": "Moderate",
+    "distributionFrequency": "Monthly (Principal + Interest)",
+    "portfolioScale": "1,200 Commercial Electric 3-Wheelers",
+    "occupancy": "100% Fleet Deployed",
+    "tagline": "SEBI-Governed Tangible Asset Securitization Backed by EV Logistics Leases",
+    "overview": "A SEBI-regulated Securitized Debt Instrument (SDI) issued through a bankruptcy-remote Special Purpose Trust (SPT). The trust owns a pool of commercial EV cargo fleets leased to leading last-mile logistics operators (Amazon, Flipkart, BigBasket).",
+    "strategy": "Monthly lease rentals paid by tier-1 e-commerce delivery partners flow directly into a designated escrow account managed by a SEBI-registered Trustee, paying monthly principal and interest returns.",
+    "underlyingAssets": [
+      {
+        "id": "sdi-asset-1",
+        "name": "Mahindra Zor Grand & Piaggio Ape E-Xtra Cargo Fleet",
+        "location": "Bengaluru, Delhi-NCR & Hyderabad Hubs",
+        "type": "Tangible Clean Mobility Electric Vehicles",
+        "areaOrScale": "1,200 Connected Electric Delivery Vehicles",
+        "tenantsOrDetails": "Contracted long-term to Magenta Mobility for Flipkart, Zomato & Amazon logistics",
+        "valuationShare": "100% Hypothecated Asset Pool",
+        "imageAccent": "from-amber-600/30 to-copper-600/20"
+      }
+    ],
+    "sponsorProfile": {
+      "name": "Grip Invest & Catalyst Trusteeship",
+      "background": "Grip Invest is India's premier digital platform pioneering SEBI-regulated Securitized Debt Instruments with over ₹1,000 Cr in structured issuances.",
+      "trackRecord": "Zero loss of investor principal across 150+ completed structured debt tranches.",
+      "institutionalBackers": [
+        "Venture Highway",
+        "Anicut Capital",
+        "AdvantEdge Founders"
+      ]
+    },
+    "riskFactors": [
+      {
+        "title": "Fleet Utilization and Battery Degradation",
+        "description": "EV batteries and hardware depreciate over 3-5 years. Fleet operator is contractually bound to maintain vehicle insurance and battery warranty.",
+        "severity": "Moderate"
+      },
+      {
+        "title": "Lessee Credit Risk",
+        "description": "Lease default by the logistics operator could trigger vehicle repossession by the Debenture Trustee.",
+        "severity": "Moderate"
+      },
+      {
+        "title": "Secondary Liquidity",
+        "description": "Listed on BSE Debt segment, but typically held to maturity (24 months) due to monthly amortizing cash flows.",
+        "severity": "Moderate"
+      }
+    ],
+    "liquidityProfile": "Low secondary market trading. Principal is returned monthly, drastically lowering duration risk.",
+    "taxImplications": "Interest component taxed at slab rate; principal return is 100% tax-free capital return.",
+    "officialLinks": {
+      "sebiFilingUrl": "https://www.sebi.gov.in",
+      "exchangeUrl": "https://www.bseindia.com"
+    },
+    "tags": [
+      "SDI",
+      "EV Fleet",
+      "Grip Invest",
+      "Securitized Debt",
+      "Monthly Payout",
+      "12%+ Yield"
+    ],
+    "symbolTicker": "SDI-EV04",
+    "priceMode": "PERIODIC_NAV",
+    "currentPrice": 10000,
+    "priceChange24h": 0,
+    "priceChangePercent24h": 0,
+    "dayHigh": 10000,
+    "dayLow": 10000,
+    "lastPriceUpdate": "2026-10-01T00:00:00.000Z",
+    "yieldPayoutFrequency": "Monthly",
+    "lastValuationPeriod": "Q3 2026"
+  },
+  {
+    "id": "rbi-sgb-gold-bonds",
+    "name": "Reserve Bank of India Sovereign Gold Bonds (SGB)",
+    "symbol": "SGB",
+    "sponsor": "Reserve Bank of India (Govt of India)",
+    "priorityTier": "Priority 1",
+    "category": "Precious Metals",
+    "subCategory": "Sovereign Gold",
+    "accessModel": "Direct Public",
+    "sebiRegulated": true,
+    "regulatoryBadge": "RBI Sovereign Guarantee (Govt of India)",
+    "indicativeYield": "2.50% p.a. + Gold Appreciation",
+    "yieldType": "Guaranteed Sovereign Coupon + Bullion Upside",
+    "minInvestment": "₹7,200 (1 Gram Gold Unit)",
+    "minInvestmentNumeric": 7200,
+    "tenure": "8 Years (Exit Option after 5th Year)",
+    "riskLevel": "Low",
+    "distributionFrequency": "Semi-Annual Coupon",
+    "portfolioScale": "Backed by Sovereign Fiscal Balance Sheet of India",
+    "occupancy": "100% Sovereign Backed",
+    "tagline": "Zero Default Paper Gold with 2.50% Annual Coupon and 100% Capital Gains Tax Exemption",
+    "overview": "Sovereign Gold Bonds are government securities denominated in grams of gold issued by the Reserve Bank of India on behalf of the Government of India. Investors receive guaranteed 2.50% per annum cash interest alongside 100% of gold price appreciation.",
+    "strategy": "Eliminates physical gold storage charges, locker fees, 3% GST on purchase, and making charges, while granting complete exemption from Indian Capital Gains Tax if held to redemption.",
+    "underlyingAssets": [
+      {
+        "id": "sgb-asset-1",
+        "name": "999 Purity Gold Pegged Sovereign Instrument",
+        "location": "Reserve Bank of India Sovereign Registry (Dematerialized)",
+        "type": "Sovereign Credit Linked to Gold Spot Prices",
+        "areaOrScale": "Benchmark 999 Purity Indian Bullion & Jewellers Association (IBJA) Prices",
+        "tenantsOrDetails": "Direct fiscal obligation of the Ministry of Finance, Government of India",
+        "valuationShare": "100% Sovereign",
+        "imageAccent": "from-amber-600/30 to-copper-600/20"
+      }
+    ],
+    "sponsorProfile": {
+      "name": "Reserve Bank of India (RBI)",
+      "background": "Central banking institution of India responsible for the monetary policy and fiscal debt issuance of the Union of India.",
+      "trackRecord": "Zero sovereign debt default in independent India's history.",
+      "institutionalBackers": [
+        "Government of India Sovereign Guarantee"
+      ]
+    },
+    "riskFactors": [
+      {
+        "title": "Gold Price Fluctuation",
+        "description": "Bond redemption value depends on market gold prices at maturity; negative bullion cycles can impact final rupee value.",
+        "severity": "Low"
+      },
+      {
+        "title": "Secondary Discount on Exchange",
+        "description": "Trading on NSE/BSE prior to 8-year maturity often happens at a slight 1-3% discount to spot gold price due to thin retail liquidity.",
+        "severity": "Low"
+      }
+    ],
+    "liquidityProfile": "High on primary exit window (years 5, 6, 7 with RBI at spot IBJA rate); medium on secondary NSE/BSE debt market.",
+    "taxImplications": "100% Capital Gains Tax FREE on redemption at maturity. Semi-annual 2.50% interest is taxable at investor slab rate.",
+    "officialLinks": {
+      "sebiFilingUrl": "https://rbi.org.in",
+      "exchangeUrl": "https://www.nseindia.com"
+    },
+    "tags": [
+      "Gold",
+      "SGB",
+      "RBI",
+      "Sovereign",
+      "Tax Free",
+      "Bullion"
+    ],
+    "symbolTicker": "SGB-2031",
+    "priceMode": "PERIODIC_NAV",
+    "currentPrice": 7150,
+    "priceChange24h": 0,
+    "priceChangePercent24h": 0,
+    "dayHigh": 7150,
+    "dayLow": 7150,
+    "lastPriceUpdate": "2026-10-15T00:00:00.000Z",
+    "yieldPayoutFrequency": "Annual",
+    "lastValuationPeriod": "Oct 2026 Sovereign NAV"
+  },
+  {
+    "id": "nippon-gold-bees-etf",
+    "name": "Nippon India ETF Gold BeES",
+    "symbol": "GOLDBEES",
+    "sponsor": "Nippon Life India Asset Management",
+    "priorityTier": "Priority 1",
+    "category": "Precious Metals",
+    "subCategory": "Vault Gold ETF",
+    "accessModel": "Direct Public",
+    "sebiRegulated": true,
+    "regulatoryBadge": "SEBI Mutual Fund Regulations (Insured Vault Gold)",
+    "indicativeYield": "Gold Spot Bullion NAV Tracking",
+    "yieldType": "Bullion Capital Appreciation",
+    "minInvestment": "₹65 (1 Unit on NSE/BSE)",
+    "minInvestmentNumeric": 65,
+    "tenure": "Perpetual (Instant Exchange Liquidity)",
+    "riskLevel": "Low",
+    "distributionFrequency": "Reinvestment / Nav Appreciation",
+    "portfolioScale": "₹15,800 Cr+ Gold AUM in Physical Insured Vaults",
+    "occupancy": "100% 0.995 Fine Physical Gold",
+    "tagline": "India's Oldest, Largest, and Most Liquid Exchange Traded Gold Bullion Fund",
+    "overview": "Nippon India ETF Gold BeES tracks the domestic spot price of physical gold. Each unit represents a fractional ownership in 0.995 fine physical gold bars stored in high-security, third-party audited, insured vaults in Mumbai.",
+    "strategy": "Provides seamless dematerialized access to physical gold with zero maker fees, tight bid-ask spreads on the exchange, and ultra-low expense ratio (0.80%).",
+    "underlyingAssets": [
+      {
+        "id": "bees-asset-1",
+        "name": "0.995 Fine Physical Gold Bars in Insured Vaults",
+        "location": "Brinks & Sequel Insured Secure Vaults, Mumbai",
+        "type": "Tangible Physical Gold Bullion",
+        "areaOrScale": "Over 22 Metric Tonnes of Physical Gold",
+        "tenantsOrDetails": "Audited independently by chartered accounting firms with physical bar weight verification",
+        "valuationShare": "100% Physical Bullion",
+        "imageAccent": "from-amber-600/30 to-copper-600/20"
+      }
+    ],
+    "sponsorProfile": {
+      "name": "Nippon Life India Asset Management",
+      "background": "Jointly owned by Nippon Life Insurance (Japan's largest private life insurer) and Indian institutional investors, managing over ₹4.5 Lakh Crores in AUM.",
+      "trackRecord": "Over 20 years managing Gold BeES with industry-leading tracking efficiency.",
+      "institutionalBackers": [
+        "Nippon Life Insurance Co. (Japan)",
+        "HDFC Bank",
+        "ICICI Bank"
+      ]
+    },
+    "riskFactors": [
+      {
+        "title": "Global Bullion Price Trends",
+        "description": "Gold prices are influenced by US Federal Reserve rate decisions, central bank purchasing, and geopolitical tensions.",
+        "severity": "Low"
+      },
+      {
+        "title": "Tracking Error",
+        "description": "Minor tracking error (under 0.25%) between NSE ETF price and domestic spot gold due to local customs duty variations.",
+        "severity": "Low"
+      }
+    ],
+    "liquidityProfile": "Instant liquidity. Most liquid gold instrument in India with hundreds of thousands of units traded daily.",
+    "taxImplications": "Taxed as non-equity mutual fund under amended Indian tax code (taxed at marginal income slab rate upon sale).",
+    "officialLinks": {
+      "sebiFilingUrl": "https://www.sebi.gov.in",
+      "exchangeUrl": "https://www.nseindia.com/get-quotes/equity?symbol=GOLDBEES"
+    },
+    "tags": [
+      "Gold",
+      "ETF",
+      "Nippon",
+      "Liquid",
+      "Safe Haven"
+    ],
+    "symbolTicker": "GOLDBEES",
+    "priceMode": "LIVE_MARKET",
+    "currentPrice": 6310,
+    "priceChange24h": 26.5,
+    "priceChangePercent24h": 0.42,
+    "dayHigh": 6340,
+    "dayLow": 6280,
+    "lastPriceUpdate": "2026-10-27T15:30:00.000Z",
+    "yieldPayoutFrequency": "Maturity"
+  },
+  {
+    "id": "vivriti-private-credit-aif-cat2",
+    "name": "Vivriti Emerging Enterprise Private Credit Fund",
+    "symbol": "VIVRITI-AIF",
+    "sponsor": "Vivriti Asset Management",
+    "priorityTier": "Priority 2",
+    "category": "Private Credit",
+    "subCategory": "SEBI Category II AIF",
+    "accessModel": "Verified Partner",
+    "partnerName": "Vivriti Capital & CredAvenue Partner Network",
+    "sebiRegulated": true,
+    "regulatoryBadge": "SEBI Regulated (AIF Regulations 2012 / Cat II)",
+    "indicativeYield": "13.50% – 15.00% p.a.",
+    "yieldType": "Net Portfolio Pre-Tax IRR",
+    "minInvestment": "₹1,00,00,000 (Or ₹25L Accredited)",
+    "minInvestmentNumeric": 10000000,
+    "tenure": "3.5 Years to 4.5 Years Closed-End",
+    "riskLevel": "High",
+    "distributionFrequency": "Quarterly Interest + Principal Return",
+    "portfolioScale": "₹3,200 Cr Cumulative Credit Assets",
+    "occupancy": "1.35x Average Asset Security Cover",
+    "tagline": "Institutional Senior Secured Lending to High-Growth Mid-Market Enterprises",
+    "overview": "A closed-ended SEBI Category II Alternative Investment Fund investing in senior secured debt, structured notes, and supply-chain bridge credit issued by established mid-market Indian enterprises with healthy operational cash flows.",
+    "strategy": "Provides structured credit solutions to performing companies needing growth capital without equity dilution. All exposures feature exclusive asset hypothecation, promoter personal guarantees, and minimum 1.25x security cover.",
+    "underlyingAssets": [
+      {
+        "id": "viv-asset-1",
+        "name": "Mid-Market Manufacturing & Auto Ancillary Debt",
+        "location": "Pune, Chennai & NCR Industrial Corridors",
+        "type": "Senior Secured Hypothecated Receivables",
+        "areaOrScale": "14 Performing Mid-Corporate Borrowers",
+        "tenantsOrDetails": "Direct charge on commercial factory land, machinery, and tier-1 vendor receivables",
+        "valuationShare": "45% of Fund Capital",
+        "imageAccent": "from-stone-700/30 to-copper-600/20"
+      },
+      {
+        "id": "viv-asset-2",
+        "name": "Healthcare & Clean Energy Supply Chain Facilities",
+        "location": "Pan-India Operations",
+        "type": "Structured Working Capital Notes",
+        "areaOrScale": "9 Corporate Issuers",
+        "tenantsOrDetails": "Collateralized by long-term customer contracts and promoter personal pledges",
+        "valuationShare": "55% of Fund Capital",
+        "imageAccent": "from-copper-600/30 to-amber-700/20"
+      }
+    ],
+    "sponsorProfile": {
+      "name": "Vivriti Asset Management",
+      "background": "Leading debt asset management franchise in India with institutional backing from Creation Investments and Lightrock.",
+      "trackRecord": "Over ₹10,000 Cr in debt capital arranged with loss rates under 0.4% across credit cycles.",
+      "institutionalBackers": [
+        "Creation Investments",
+        "Lightrock India",
+        "TVS Capital",
+        "Havells Family Office"
+      ]
+    },
+    "riskFactors": [
+      {
+        "title": "Borrower Credit Default",
+        "description": "Mid-market corporates face operational business risks; prolonged cash flow stress could trigger recovery litigation.",
+        "severity": "High"
+      },
+      {
+        "title": "Lock-In Liquidity",
+        "description": "Strict 3.5-year lock-in period with zero early redemption. Capital is returned via quarterly cash distributions as loans amortize.",
+        "severity": "High"
+      },
+      {
+        "title": "Macroeconomic Downside",
+        "description": "Industrial manufacturing slowdowns or interest rate spikes can moderate borrower interest service coverage ratios (ISCR).",
+        "severity": "Moderate"
+      }
+    ],
+    "liquidityProfile": "Low liquidity (Closed-end fund). Intended strictly for High Net Worth Individuals (HNIs) and Accredited Investors.",
+    "taxImplications": "Category II AIF has tax pass-through status under Section 115UB of the Indian Income Tax Act; business income taxed at fund level or investor level depending on nature of instruments.",
+    "officialLinks": {
+      "sebiFilingUrl": "https://www.sebi.gov.in",
+      "partnerUrl": "https://www.vivriticapital.com"
+    },
+    "tags": [
+      "AIF Cat II",
+      "Private Credit",
+      "HNI",
+      "High Yield",
+      "Senior Debt",
+      "Verified Partner"
+    ],
+    "symbolTicker": "VIV-CREDIT",
+    "priceMode": "PERIODIC_NAV",
+    "currentPrice": 1000000,
+    "priceChange24h": 0,
+    "priceChangePercent24h": 0,
+    "dayHigh": 1000000,
+    "dayLow": 1000000,
+    "lastPriceUpdate": "2026-09-30T00:00:00.000Z",
+    "yieldPayoutFrequency": "Quarterly",
+    "lastValuationPeriod": "Q3 2026 Audited"
+  },
+  {
+    "id": "altgraaf-bengaluru-tech-hub",
+    "name": "Whitefield Prime Grade-A Tech Hub Fractional CRE",
+    "symbol": "CRE-BLR01",
+    "sponsor": "AltGraaf & Embassy Services",
+    "priorityTier": "Priority 2",
+    "category": "Fractional CRE",
+    "subCategory": "Fractional Commercial Real Estate",
+    "accessModel": "Verified Partner",
+    "partnerName": "AltGraaf Fractional CRE Network",
+    "sebiRegulated": false,
+    "regulatoryBadge": "SPV Structure (SM REIT Transition Framework)",
+    "indicativeYield": "9.20% Rental Yield + 6% Capital Growth",
+    "yieldType": "Target Gross IRR ~15.2%",
+    "minInvestment": "₹5,00,000 (Fractional Ownership Unit)",
+    "minInvestmentNumeric": 500000,
+    "tenure": "4 to 5 Years Recommended Holding",
+    "riskLevel": "Moderate",
+    "distributionFrequency": "Monthly Rental Payout",
+    "portfolioScale": "42,000 Sq Ft Single Dedicated Tech Floor",
+    "occupancy": "100% Leased to European MNC",
+    "tagline": "Fractional Pre-Leased Commercial Office in Bengaluru's Core Tech Submarket",
+    "overview": "A pre-leased Grade-A office floor in Whitefield, Bengaluru, held through a dedicated Private Limited Special Purpose Vehicle (SPV). The asset is 100% leased to a Fortune 500 European technology conglomerate on a 9-year lease with 4.5 years residual lock-in.",
+    "strategy": "Investors acquire proportional equity shares and compulsorily convertible debentures (CCDs) in the SPV, collecting monthly direct rent dividends plus capital appreciation upon building divestment.",
+    "underlyingAssets": [
+      {
+        "id": "cre-asset-1",
+        "name": "Floor 5, Sigma Tech Park, Whitefield",
+        "location": "Whitefield Main Road, Bengaluru, Karnataka",
+        "type": "Grade-A Commercial Office Floor",
+        "areaOrScale": "42,000 Sq. Ft. Super Built-Up Area",
+        "tenantsOrDetails": "Leased to Schneider Electric / Global R&D Center on 9-year lease with 15% escalation every 3 years",
+        "valuationShare": "100% SPV Asset",
+        "imageAccent": "from-copper-700/30 to-stone-700/20"
+      }
+    ],
+    "sponsorProfile": {
+      "name": "AltGraaf (Jordans Asset Managers)",
+      "background": "Leading alternative asset discovery platform connecting high-net-worth investors with pre-leased commercial real estate and asset-backed credit.",
+      "trackRecord": "Over ₹500 Cr in fractional properties syndicated with 100% on-time monthly rental disbursements.",
+      "institutionalBackers": [
+        "Kalaari Capital Partners",
+        "Angel Investors Network"
+      ]
+    },
+    "riskFactors": [
+      {
+        "title": "Tenant Exit or Lease Renegotiation",
+        "description": "If the tenant vacates after the lock-in period, there may be a 3-6 month re-letting downtime before a replacement tenant is onboarded.",
+        "severity": "Moderate"
+      },
+      {
+        "title": "Secondary Resale Liquidity",
+        "description": "Liquidity is facilitated via internal bulletin board partner windows; not traded on public stock exchange order books.",
+        "severity": "Moderate"
+      },
+      {
+        "title": "Regulatory SM REIT Migration",
+        "description": "Asset is currently structured under an SPV model and will transition to SEBI's formal SM REIT framework upon aggregate sponsor threshold completion.",
+        "severity": "Low"
+      }
+    ],
+    "liquidityProfile": "Private partner resale window twice a year. Final liquidity through 5-year asset exit sale.",
+    "taxImplications": "Rental income is distributed via interest on debentures or dividends from the SPV.",
+    "officialLinks": {
+      "partnerUrl": "https://altgraaf.com"
+    },
+    "tags": [
+      "Fractional CRE",
+      "Bangalore",
+      "Whitefield",
+      "MNC Tenant",
+      "Monthly Rent",
+      "Verified Partner"
+    ],
+    "symbolTicker": "ALT-TECH",
+    "priceMode": "PERIODIC_NAV",
+    "currentPrice": 250000,
+    "priceChange24h": 0,
+    "priceChangePercent24h": 0,
+    "dayHigh": 250000,
+    "dayLow": 250000,
+    "lastPriceUpdate": "2026-09-30T00:00:00.000Z",
+    "yieldPayoutFrequency": "Monthly",
+    "lastValuationPeriod": "Q3 2026"
+  },
+  {
+    "id": "hdb-financial-pre-ipo-shares",
+    "name": "HDB Financial Services Pre-IPO Equity",
+    "symbol": "HDB-UNLISTED",
+    "sponsor": "HDFC Bank (Parent Company)",
+    "priorityTier": "Priority 2",
+    "category": "Pre-IPO Shares",
+    "subCategory": "Unlisted Blue-Chip NBFC",
+    "accessModel": "Verified Partner",
+    "partnerName": "UnlistedKart & TradeUnlisted Custody Network",
+    "sebiRegulated": false,
+    "regulatoryBadge": "Unlisted Public Ltd (SEBI Depository Transfer via CDSL/NSDL)",
+    "indicativeYield": "18.00% – 24.00% Target IPO Return",
+    "yieldType": "Long-Term Capital Appreciation",
+    "minInvestment": "₹50,000 (Approx 50-60 Shares)",
+    "minInvestmentNumeric": 50000,
+    "tenure": "1 to 2 Years (Target IPO Window)",
+    "riskLevel": "Very High",
+    "distributionFrequency": "Capital Appreciation at IPO Listing",
+    "portfolioScale": "₹84,000 Cr+ Total Loan Book (94.6% Owned by HDFC Bank)",
+    "occupancy": "Profitable NBFC (₹2,400 Cr+ Annual PAT)",
+    "tagline": "Pre-IPO Equity in HDFC Bank's Stellar Non-Banking Financial Lending Subsidiary",
+    "overview": "HDB Financial Services is the retail and vehicle financing subsidiary of India's largest private lender, HDFC Bank. Under RBI's scale-based regulatory mandate for Upper-Layer NBFCs, HDB Financial is preparing for an upcoming public IPO listing.",
+    "strategy": "Investors purchase unlisted equity shares transferred directly into their personal CDSL/NSDL Demat account via verified partner off-market trade execution, capturing valuation re-rating ahead of the public IPO listing.",
+    "underlyingAssets": [
+      {
+        "id": "hdb-asset-1",
+        "name": "HDB Financial Pan-India Retail Branch Network",
+        "location": "Over 1,400 Branches across 1,000+ Indian Towns",
+        "type": "Diversified Retail & Commercial Lending Franchise",
+        "areaOrScale": "₹84,000 Cr+ Loan Assets across Two-Wheelers, Consumer Durables & LAP",
+        "tenantsOrDetails": "Subsidiary of HDFC Bank with industry-leading ROA (2.8%) and pristine credit rating",
+        "valuationShare": "Direct Corporate Equity Share",
+        "imageAccent": "from-copper-600/30 to-amber-700/20"
+      }
+    ],
+    "sponsorProfile": {
+      "name": "HDFC Bank Limited",
+      "background": "India's largest private bank and the world's 4th largest banking corporation by market capitalization post-merger with HDFC Ltd.",
+      "trackRecord": "Unbroken record of profitability and institutional risk governance across 30 years.",
+      "institutionalBackers": [
+        "HDFC Bank (94.6%)",
+        "Institutional Foreign Portfolio Investors"
+      ]
+    },
+    "riskFactors": [
+      {
+        "title": "IPO Timing & Regulatory Filings",
+        "description": "Market volatility or regulatory delays from SEBI/RBI can postpone the official IPO date by several quarters.",
+        "severity": "Moderate"
+      },
+      {
+        "title": "Pre-IPO 6-Month Statutory Lock-In",
+        "description": "Under SEBI ICDR regulations, pre-IPO shares are locked in for 6 months post-IPO listing day before retail trading is permitted.",
+        "severity": "High"
+      },
+      {
+        "title": "Valuation Multiples Discrepancy",
+        "description": "Unlisted market prices can fluctuate based on dealer inventory spreads rather than instant public market supply/demand.",
+        "severity": "Moderate"
+      }
+    ],
+    "liquidityProfile": "Low liquidity pre-IPO. Shares are transferred demat-to-demat via partner custodian. Complete liquid access upon NSE/BSE stock exchange listing.",
+    "taxImplications": "Long Term Capital Gains (held > 24 months unlisted) taxed at 12.5% without indexation under Finance Act 2024. Short-term taxed at marginal slab rate.",
+    "officialLinks": {
+      "partnerUrl": "https://www.hdbfs.com"
+    },
+    "tags": [
+      "Pre-IPO",
+      "HDFC Bank",
+      "Unlisted Equity",
+      "NBFC",
+      "IPO Listing",
+      "Verified Partner"
+    ],
+    "symbolTicker": "HDB-UNL",
+    "priceMode": "PERIODIC_NAV",
+    "currentPrice": 1120,
+    "priceChange24h": 0,
+    "priceChangePercent24h": 0,
+    "dayHigh": 1120,
+    "dayLow": 1120,
+    "lastPriceUpdate": "2026-10-20T00:00:00.000Z",
+    "yieldPayoutFrequency": "Maturity",
+    "lastValuationPeriod": "Q3 2026 Valued"
+  },
+  {
+    "id": "faircent-prime-p2p-credit",
+    "name": "Faircent Prime Diversified P2P Consumer Credit",
+    "symbol": "P2P-PRIME",
+    "sponsor": "Faircent (Fairassets Technologies)",
+    "priorityTier": "Priority 2",
+    "category": "P2P Lending",
+    "subCategory": "Peer-to-Peer Consumer Credit",
+    "accessModel": "Verified Partner",
+    "partnerName": "Faircent P2P Lending Platform",
+    "sebiRegulated": false,
+    "regulatoryBadge": "RBI Regulated NBFC-P2P (Directions 2017)",
+    "indicativeYield": "10.50% – 12.50% p.a.",
+    "yieldType": "Net Annualized Return",
+    "minInvestment": "₹10,000 (Auto-Diversified across 100+ Borrowers)",
+    "minInvestmentNumeric": 10000,
+    "tenure": "12 Months to 36 Months",
+    "riskLevel": "Moderate",
+    "distributionFrequency": "Monthly EMI (Principal + Interest)",
+    "portfolioScale": "Over ₹3,000 Cr in Disbursed Peer Credit",
+    "occupancy": "Over 97% Collection Efficiency",
+    "tagline": "Automated Algorithm-Driven Micro-Diversification across Prime Salaried Borrowers",
+    "overview": "India's pioneer Reserve Bank of India-registered NBFC-P2P lending platform. Funds are algorithmically distributed in micro-tickets of ₹500 to ₹1,000 across hundreds of pre-vetted, prime salaried corporate employees with CIBIL scores above 720.",
+    "strategy": "Automated fractional diversification drastically curtails idiosyncratic default impact. Monthly repayments of principal and interest are credited directly to the investor's designated escrow account or automatically reinvested.",
+    "underlyingAssets": [
+      {
+        "id": "p2p-asset-1",
+        "name": "Prime Salaried Consumer Credit Pool",
+        "location": "Metro & Tier-1 Salaried Professionals Across India",
+        "type": "Unsecured Personal & Professional Micro-Loans",
+        "areaOrScale": "Average CIBIL Score 740+ / Average Monthly Salary ₹65,000+",
+        "tenantsOrDetails": "Employed with verified Tier-1 corporates (TCS, Infosys, HDFC, Govt Services)",
+        "valuationShare": "100% Micro-Fractional Diversified",
+        "imageAccent": "from-amber-600/30 to-copper-600/20"
+      }
+    ],
+    "sponsorProfile": {
+      "name": "Fairassets Technologies (Faircent)",
+      "background": "India's first RBI-registered NBFC-P2P platform with strong institutional equity backing from prominent venture capital funds.",
+      "trackRecord": "Over 8 years of operational track record with verified risk underwriting metrics.",
+      "institutionalBackers": [
+        "Muthoot Fincorp",
+        "Das Capital",
+        "Starharbor Asia",
+        "Aarin Capital"
+      ]
+    },
+    "riskFactors": [
+      {
+        "title": "Individual Borrower Non-Performing Loans (NPA)",
+        "description": "Unsecured consumer loans carry inherent default risks (typically 2-3% historical gross default rate), mitigated by extensive fractional diversification.",
+        "severity": "Moderate"
+      },
+      {
+        "title": "Macro Unemployment or Layoffs",
+        "description": "Tech or services sector layoffs can temporarily impair monthly EMI collection velocity.",
+        "severity": "Moderate"
+      },
+      {
+        "title": "RBI Regulatory Lending Cap",
+        "description": "RBI caps total P2P lending exposure across all platforms at ₹50 Lakhs per individual investor.",
+        "severity": "Low"
+      }
+    ],
+    "liquidityProfile": "Monthly liquidity via regular EMI repayments. Early liquidity liquidation pool available subject to secondary buyer matching.",
+    "taxImplications": "All interest earnings are treated as regular income and taxed according to the investor's individual income tax slab rate.",
+    "officialLinks": {
+      "partnerUrl": "https://www.faircent.in"
+    },
+    "tags": [
+      "P2P Lending",
+      "RBI Regulated",
+      "Faircent",
+      "Monthly EMI",
+      "Diversified Credit",
+      "Verified Partner"
+    ],
+    "symbolTicker": "FAIR-P2P",
+    "priceMode": "PERIODIC_NAV",
+    "currentPrice": 50000,
+    "priceChange24h": 0,
+    "priceChangePercent24h": 0,
+    "dayHigh": 50000,
+    "dayLow": 50000,
+    "lastPriceUpdate": "2026-10-15T00:00:00.000Z",
+    "yieldPayoutFrequency": "Monthly",
+    "lastValuationPeriod": "Q3 2026"
+  },
+  {
+    "id": "susten-clean-energy-solar-spv",
+    "name": "CleanSun Commercial Rooftop & C&I Solar SPV",
+    "symbol": "SOLAR-CI01",
+    "sponsor": "Susten Clean Infrastructure & Pyse",
+    "priorityTier": "Priority 2",
+    "category": "Renewable Energy",
+    "subCategory": "Commercial & Industrial Solar Asset",
+    "accessModel": "Verified Partner",
+    "partnerName": "Pyse Earth & Susten Cleantech Partner",
+    "sebiRegulated": false,
+    "regulatoryBadge": "Direct Asset Leasing SPV",
+    "indicativeYield": "11.80% p.a.",
+    "yieldType": "Pre-Tax IRR (Monthly Solar Generation Payout)",
+    "minInvestment": "₹25,000",
+    "minInvestmentNumeric": 25000,
+    "tenure": "5 Years Contractual Life",
+    "riskLevel": "Moderate",
+    "distributionFrequency": "Monthly (Solar Energy Tariff Payout)",
+    "portfolioScale": "2.4 MW Solar Photovoltaic Installation",
+    "occupancy": "100% PPA with Tier-1 Automotive Manufacturer",
+    "tagline": "Direct Fractional Ownership of Revenue-Generating Commercial Solar Installations",
+    "overview": "A commercial and industrial (C&I) solar plant located on the premises of a leading auto components manufacturer in Chennai. The asset operates under a binding 15-year Power Purchase Agreement (PPA) with zero grid off-take risk.",
+    "strategy": "The solar energy generated is consumed directly by the factory at a tariff 25% lower than the state electricity discom rate. Monthly energy tariff revenues flow directly to investors via fractional equipment lease agreements.",
+    "underlyingAssets": [
+      {
+        "id": "sol-asset-1",
+        "name": "2.4 MW High-Efficiency Mono-PERC Solar Plant",
+        "location": "Sriperumbudur Industrial Corridor, Chennai, Tamil Nadu",
+        "type": "C&I Rooftop & Ground Mounted Solar Installation",
+        "areaOrScale": "5,400 Tier-1 Bloomberg Tier-1 Solar Panels",
+        "tenantsOrDetails": "Anchored by 15-Year Take-or-Pay Power Purchase Agreement with Tier-1 Auto OEM",
+        "valuationShare": "100% Tangible Solar Hardware",
+        "imageAccent": "from-amber-600/30 to-copper-600/20"
+      }
+    ],
+    "sponsorProfile": {
+      "name": "Pyse & Susten Clean Mobility",
+      "background": "Pioneering Indian sustainability fintech democratizing fractional ownership of green energy and climate assets.",
+      "trackRecord": "Over 12 MW of operational C&I solar capacity successfully generating green yield across 4 states.",
+      "institutionalBackers": [
+        "Climate Tech Angels",
+        "Elevation Capital Syndicate"
+      ]
+    },
+    "riskFactors": [
+      {
+        "title": "Solar Irradiance and Weather Variations",
+        "description": "Monsoon seasons or overcast weather can temporarily reduce monthly kilowatt-hour energy generation by 10-15%.",
+        "severity": "Low"
+      },
+      {
+        "title": "Host Manufacturing Offtaker Credit",
+        "description": "The financial health of the host factory determines monthly energy bill payment timeliness.",
+        "severity": "Moderate"
+      },
+      {
+        "title": "Equipment Damage and Degradation",
+        "description": "Covered by comprehensive equipment all-risk insurance and 25-year manufacturer linear output warranties.",
+        "severity": "Low"
+      }
+    ],
+    "liquidityProfile": "Fixed tenor of 5 years. Monthly revenue disbursements return capital throughout the investment period.",
+    "taxImplications": "Equipment lease rentals received with opportunities for accelerated depreciation for qualifying corporate entities.",
+    "officialLinks": {
+      "partnerUrl": "https://pyse.earth"
+    },
+    "tags": [
+      "Solar",
+      "Clean Energy",
+      "ESG",
+      "Renewable",
+      "Monthly Yield",
+      "Verified Partner"
+    ],
+    "symbolTicker": "SUST-SOLAR",
+    "priceMode": "PERIODIC_NAV",
+    "currentPrice": 100000,
+    "priceChange24h": 0,
+    "priceChangePercent24h": 0,
+    "dayHigh": 100000,
+    "dayLow": 100000,
+    "lastPriceUpdate": "2026-09-30T00:00:00.000Z",
+    "yieldPayoutFrequency": "Quarterly",
+    "lastValuationPeriod": "Q3 2026"
+  }
+]

@@ -1,0 +1,363 @@
+[
+  {
+    "id": "topic-foundations",
+    "title": "Alternative Investment Foundations in India",
+    "slug": "alternative-investment-foundations",
+    "category": "Foundations",
+    "description": "Master the structural shift from traditional fixed deposits and equities into cash-flow-generating alternative assets under SEBI and RBI frameworks.",
+    "iconName": "BookOpen",
+    "order": 1,
+    "subTopics": [
+      {
+        "id": "lesson-foundations-01",
+        "topicId": "topic-foundations",
+        "title": "Demystifying Alternative Assets: Beyond Equities & Fixed Deposits",
+        "slug": "demystifying-alternative-assets",
+        "difficulty": "Beginner",
+        "estimatedReadingTime": "6 min read",
+        "durationMinutes": 6,
+        "summary": "Understand why institutional family offices allocate 20-30% of portfolios to alternatives and how retail participation is evolving.",
+        "order": 1,
+        "contentSections": [
+          {
+            "id": "sec-1",
+            "heading": "The Evolution of Indian Wealth Allocation",
+            "paragraphs": [
+              "For decades, Indian household savings were concentrated in residential real estate, physical gold, and bank fixed deposits. However, fixed deposits often yield negative real returns after adjusting for retail inflation and personal tax brackets.",
+              "Alternative investments encompass asset classes outside traditional listed equities, government debt, and liquid savings. In India, institutional alternative assets generate contractual cash distributions backed by physical infrastructure, commercial leases, or securitized corporate receivables."
+            ],
+            "calloutNote": {
+              "type": "key-takeaway",
+              "title": "Core Distinction",
+              "text": "Unlike speculative equities where return depends entirely on someone buying your share at a higher price, institutional alternatives are anchored in cash flow yields produced by operational assets."
+            },
+            "bulletPoints": [
+              "Inflation-Hedging: Contractual rental escalations (10-15% every 3 years) directly combat cost-of-living rises.",
+              "Portfolio Uncorrelation: Returns derived from physical asset utilization rather than broader stock market sentiment.",
+              "Regulatory Formalization: Landmark SEBI regulations in 2014, 2021, and 2024 established rigorous institutional custody, 90% payout rules, and trustee oversight."
+            ]
+          },
+          {
+            "id": "sec-2",
+            "heading": "The Alternative Asset Hierarchy in India",
+            "paragraphs": [
+              "The Indian regulatory landscape categorizes alternatives into distinct risk-return tiers: listed public vehicles (REITs, InvITs), registered pooled structures (SEBI Category I/II/III AIFs), exchange-traded securitized debt instruments (SDIs), and corporate private credit.",
+              "Retail accessibility has dramatically expanded since SEBI reduced minimum lot sizes for public REITs and InvITs from ₹2 Lakhs down to a single unit (₹100–₹400) on the NSE and BSE."
+            ]
+          }
+        ],
+        "numericalExamples": [
+          {
+            "id": "num-ex-1",
+            "title": "Real Return Calculation: Fixed Deposit vs. Alternative Yield",
+            "subtitle": "Comparing post-tax, post-inflation wealth preservation",
+            "inputs": [
+              { "label": "FD Gross Rate", "value": "7.00% p.a." },
+              { "label": "Investor Tax Bracket", "value": "30% (+ 4% cess = 31.2%)" },
+              { "label": "Retail CPI Inflation", "value": "5.50% p.a." }
+            ],
+            "calculationSteps": [
+              "Step 1: Compute Post-Tax FD Yield = 7.00% × (1 - 0.312) = 4.816%",
+              "Step 2: Compute Real Purchasing Power Return = 4.816% - 5.50% = -0.684% (Negative Real Return)",
+              "Step 3: Compare with Commercial REIT Yield of 7.4% with 45% Return of Capital (RoC tax-deferred) + 4% NAV growth = Net Real Return of +4.20%"
+            ],
+            "finalResult": {
+              "label": "Wealth Drag Avoided",
+              "value": "+488 bps real outperformance",
+              "note": "Illustrates how passive alternative yields preserve intergenerational purchasing power."
+            }
+          }
+        ],
+        "quizQuestions": [
+          {
+            "id": "quiz-1",
+            "question": "What is the primary driver of returns in institutional alternative assets like REITs and InvITs?",
+            "options": [
+              "Pure stock market momentum and speculative trading volume",
+              "Contractual cash flows generated from operational leases and infrastructure tariffs",
+              "Unregulated offshore cryptocurrency derivatives",
+              "Guaranteed fixed sovereign returns with zero market exposure"
+            ],
+            "correctOptionIndex": 1,
+            "explanation": "Institutional alternatives derive their value from contractual, operational cash distributions such as Grade-A office rents and national power transmission tariffs."
+          }
+        ]
+      },
+      {
+        "id": "lesson-foundations-02",
+        "topicId": "topic-foundations",
+        "title": "Understanding the 10Y G-Sec Spread Benchmark",
+        "slug": "understanding-g-sec-spread-benchmark",
+        "difficulty": "Intermediate",
+        "estimatedReadingTime": "8 min read",
+        "durationMinutes": 8,
+        "summary": "Learn how institutional investors use the 10-Year Indian Government Bond yield to evaluate risk premiums.",
+        "order": 2,
+        "contentSections": [
+          {
+            "id": "sec-gsec-1",
+            "heading": "The Risk-Free Rate of India",
+            "paragraphs": [
+              "In Indian financial markets, the 10-Year Government Security (G-Sec) bond yield is considered the baseline risk-free rate of return. Because the sovereign cannot default on domestic rupee obligations, any alternative investment must compensate investors with an incremental yield spread above this benchmark.",
+              "If the 10Y G-Sec trades at 7.05%, an office REIT yielding 7.40% offers a +35 bps yield spread (plus equity capital appreciation), while an infrastructure InvIT yielding 11.20% provides an institutional spread of +415 bps."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "topic-reits",
+    "title": "Commercial REITs (Real Estate Investment Trusts)",
+    "slug": "commercial-reits-mastery",
+    "category": "REITs",
+    "description": "Deep-dive into Grade-A office tech parks, retail malls, tenant concentration, WALE metrics, and SEBI REIT Regulations 2014.",
+    "iconName": "Building2",
+    "order": 2,
+    "subTopics": [
+      {
+        "id": "lesson-reits-01",
+        "topicId": "topic-reits",
+        "title": "REIT Architecture & The SEBI 80/20 & 90% NDCF Mandate",
+        "slug": "reit-architecture-sebi-mandates",
+        "difficulty": "Beginner",
+        "estimatedReadingTime": "7 min read",
+        "durationMinutes": 7,
+        "summary": "How trusts hold special purpose vehicles (SPVs) and statutory protections governing investor cash flows.",
+        "order": 1,
+        "contentSections": [
+          {
+            "id": "sec-reit-1",
+            "heading": "Trust Structure and Special Purpose Vehicles (SPVs)",
+            "paragraphs": [
+              "A Real Estate Investment Trust (REIT) is established as a trust under the Indian Trusts Act, 1882, and registered with SEBI. The trust holds 100% or majority equity in underlying Special Purpose Vehicles (SPVs) that own the physical land titles and office buildings.",
+              "SEBI mandates two critical statutory boundaries to safeguard investors from developer speculation:"
+            ],
+            "bulletPoints": [
+              "80% Completed Asset Rule: At least 80% of the REIT's Gross Asset Value (GAV) must be invested in operational, income-generating completed properties. Under-construction projects are capped at 20%.",
+              "90% NDCF Payout Mandate: The REIT must distribute at least 90% of its Net Distributable Cash Flows (NDCF) to unit-holders at least semi-annually (in practice, all listed Indian REITs distribute quarterly).",
+              "49% Statutory Leverage Ceiling: Consolidated net debt cannot exceed 49% of GAV without AAA rating and mandatory unit-holder approval."
+            ]
+          }
+        ],
+        "numericalExamples": [
+          {
+            "id": "num-reit-1",
+            "title": "Net Distributable Cash Flow (NDCF) Waterfall",
+            "subtitle": "From Gross Rental Income to Investor Payout",
+            "inputs": [
+              { "label": "Gross Rental Revenue", "value": "₹1,000 Crores" },
+              { "label": "Property Maintenance & Taxes", "value": "₹150 Crores" },
+              { "label": "Interest on SPV Debt", "value": "₹120 Crores" },
+              { "label": "Statutory Minimum Distribution", "value": "90% of NDCF" }
+            ],
+            "calculationSteps": [
+              "Step 1: Net Operating Income (NOI) = ₹1,000 Cr - ₹150 Cr = ₹850 Crores",
+              "Step 2: Net Distributable Cash Flow (NDCF) = ₹850 Cr - ₹120 Cr debt service - ₹30 Cr capex = ₹700 Crores",
+              "Step 3: Minimum Mandatory Distribution to Unit-holders = ₹700 Cr × 90% = ₹630 Crores"
+            ],
+            "finalResult": {
+              "label": "Annual Cash Distribution Pool",
+              "value": "₹630 Crores (₹15.75 / unit across 40 Cr units)",
+              "note": "Demonstrates the cashflow transparency mandated by SEBI guidelines."
+            }
+          }
+        ],
+        "quizQuestions": [
+          {
+            "id": "quiz-reit-1",
+            "question": "Under SEBI REIT Regulations, what minimum percentage of completed income-generating assets must a REIT hold?",
+            "options": [
+              "At least 50% of asset value",
+              "At least 80% of gross asset value",
+              "100% with zero development allowed",
+              "No statutory restriction"
+            ],
+            "correctOptionIndex": 1,
+            "explanation": "SEBI mandates that at least 80% of asset value must be in operational completed assets to eliminate speculative construction risk."
+          }
+        ]
+      },
+      {
+        "id": "lesson-reits-02",
+        "topicId": "topic-reits",
+        "title": "WALE, Tenant Concentration, and Mark-to-Market Re-letting",
+        "slug": "wale-tenant-concentration-mark-to-market",
+        "difficulty": "Intermediate",
+        "estimatedReadingTime": "9 min read",
+        "durationMinutes": 9,
+        "summary": "Master Weighted Average Lease Expiry (WALE) and how contractual rent escalations drive long-term cash flow predictability.",
+        "order": 2,
+        "contentSections": [
+          {
+            "id": "sec-wale-1",
+            "heading": "Weighted Average Lease Expiry (WALE)",
+            "paragraphs": [
+              "WALE measures the average remaining duration of in-place lease agreements across a commercial portfolio, weighted by Gross Leasable Area or monthly gross rentals. A WALE of 6.8 years indicates that the portfolio's rental cash flows are contractually committed for nearly seven years."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "topic-sm-reits",
+    "title": "Small & Medium REITs (SM REITs Framework 2024)",
+    "slug": "small-medium-reits-framework",
+    "category": "SM REITs",
+    "description": "Understand SEBI's groundbreaking March 2024 regulations bringing fractional real estate platforms under regulated retail trusts.",
+    "iconName": "Building",
+    "order": 3,
+    "subTopics": [
+      {
+        "id": "lesson-smreit-01",
+        "topicId": "topic-sm-reits",
+        "title": "SM REITs vs. Traditional REITs: The Complete Comparison",
+        "slug": "sm-reits-vs-traditional-reits",
+        "difficulty": "Intermediate",
+        "estimatedReadingTime": "8 min read",
+        "durationMinutes": 8,
+        "summary": "Asset scale (₹50 Cr to ₹500 Cr), ₹10 Lakhs ticket size, and mandatory trustee registration under SEBI's 2024 amendment.",
+        "order": 1,
+        "contentSections": [
+          {
+            "id": "sec-sm-1",
+            "heading": "The Institutionalization of Fractional Real Estate",
+            "paragraphs": [
+              "Prior to March 2024, fractional ownership platforms operated through unlisted private limited company SPVs with high legal overhead and limited secondary liquidity.",
+              "SEBI introduced the Small and Medium REIT (SM REIT) framework to regulate single-asset or mid-scale portfolios with asset values between ₹50 Crores and ₹500 Crores, democratizing institutional real estate with a ₹10 Lakh minimum investment lot."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "topic-invits",
+    "title": "Infrastructure Investment Trusts (InvITs)",
+    "slug": "infrastructure-invits-mastery",
+    "category": "InvITs",
+    "description": "Monetizing national highways, inter-state power transmission grids, and clean energy assets with high recurring yields.",
+    "iconName": "TowerControl",
+    "order": 4,
+    "subTopics": [
+      {
+        "id": "lesson-invits-01",
+        "topicId": "topic-invits",
+        "title": "InvIT Mechanics: Power Grids & National Highway Concessions",
+        "slug": "invit-mechanics-concessions",
+        "difficulty": "Beginner",
+        "estimatedReadingTime": "7 min read",
+        "durationMinutes": 7,
+        "summary": "Availability-based versus toll-volume revenue models and why InvIT yields often exceed REIT distributions.",
+        "order": 1,
+        "contentSections": [
+          {
+            "id": "sec-inv-1",
+            "heading": "The Infrastructure Monetization Engine",
+            "paragraphs": [
+              "Infrastructure Investment Trusts (InvITs) own and operate long-life, mission-critical infrastructure projects such as power transmission lines (e.g., IndiGrid, PowerGrid InvIT) and toll expressways (e.g., IRB InvIT).",
+              "Power transmission InvITs operate on an availability-based revenue model: as long as the transmission lines achieve 98%+ technical uptime, the sponsor receives full contractual tariffs from central utility pools, regardless of actual power volumes transmitted."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "topic-aifs",
+    "title": "Alternative Investment Funds (AIFs Category I, II & III)",
+    "slug": "aifs-mastery",
+    "category": "AIFs",
+    "description": "Explore private equity, venture debt, real estate credit funds, and tax pass-through status under Section 115UB.",
+    "iconName": "Shield",
+    "order": 5,
+    "subTopics": [
+      {
+        "id": "lesson-aifs-01",
+        "topicId": "topic-aifs",
+        "title": "AIF Categories Demystified: Cat I, II, and III Differences",
+        "slug": "aif-categories-demystified",
+        "difficulty": "Advanced",
+        "estimatedReadingTime": "10 min read",
+        "durationMinutes": 10,
+        "summary": "Statutory ₹1 Crore entry tickets, 2/20 fee structures, hurdle rates, and tax pass-through mechanics in Category II funds.",
+        "order": 1,
+        "contentSections": [
+          {
+            "id": "sec-aif-1",
+            "heading": "SEBI AIF Regulations 2012 Structure",
+            "paragraphs": [
+              "Alternative Investment Funds (AIFs) represent pooled investment vehicles established in India for sophisticated domestic and institutional investors, requiring a statutory minimum ticket size of ₹1 Crore (₹25 Lakhs for accredited angel funds).",
+              "Category II AIFs constitute the largest segment in India, encompassing private credit, real estate senior secured debt, and private equity funds."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "topic-credit",
+    "title": "Securitized Debt Instruments (SDI) & Corporate Credit",
+    "slug": "sdi-corporate-credit",
+    "category": "Private Credit",
+    "description": "Unpack lease rental discounting (LRD), invoice discounting, EV fleet leasing pools, and SEBI NCS SDI listing regulations.",
+    "iconName": "Layers",
+    "order": 6,
+    "subTopics": [
+      {
+        "id": "lesson-credit-01",
+        "topicId": "topic-credit",
+        "title": "How Securitized Debt Instruments (SDIs) Work in India",
+        "slug": "how-sdis-work-in-india",
+        "difficulty": "Intermediate",
+        "estimatedReadingTime": "8 min read",
+        "durationMinutes": 8,
+        "summary": "Bankruptcy-remote Special Purpose Trusts (SPTs) regulated under SEBI Non-Convertible Securities regulations.",
+        "order": 1,
+        "contentSections": [
+          {
+            "id": "sec-sdi-1",
+            "heading": "The Rise of Retail-Accessible Structured Credit",
+            "paragraphs": [
+              "Securitized Debt Instruments (SDIs) allow retail and HNW investors to fund asset-backed cash flows (such as commercial EV fleet leases or equipment financing) through a bankruptcy-remote trust registered with SEBI.",
+              "SDIs are rated by credit rating agencies (e.g. CRISIL, ICRA) and listed on the BSE and NSE debt segments, enabling electronic demat holding."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "topic-bonds",
+    "title": "Senior Corporate Bonds & Sovereign Gold Bonds",
+    "slug": "corporate-bonds-sgb",
+    "category": "Bonds",
+    "description": "High-yield AAA corporate debentures, sovereign gold bonds (SGB), secondary exchange liquidity, and tax treatment.",
+    "iconName": "Landmark",
+    "order": 7,
+    "subTopics": [
+      {
+        "id": "lesson-bonds-01",
+        "topicId": "topic-bonds",
+        "title": "Senior Secured NCDs: Seniority in Corporate Liquidation",
+        "slug": "senior-secured-ncds-seniority",
+        "difficulty": "Beginner",
+        "estimatedReadingTime": "6 min read",
+        "durationMinutes": 6,
+        "summary": "How charge on underlying tangible assets protects bondholders ahead of equity in insolvency proceedings.",
+        "order": 1,
+        "contentSections": [
+          {
+            "id": "sec-bonds-1",
+            "heading": "Capital Structure Seniority",
+            "paragraphs": [
+              "Non-Convertible Debentures (NCDs) issued by blue-chip conglomerates (such as Tata Capital or L&T Finance) carry a first-ranking pari-passu charge over company receivables or tangible assets.",
+              "Under the Insolvency and Bankruptcy Code (IBC 2016), secured financial creditors rank at the highest recovery priority, far superior to unsecured creditors and equity shareholders."
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,133 @@
+{
+  "featuredStory": {
+    "id": "radar-feat-01",
+    "title": "SEBI Formalizes SM REIT Framework: Opening ₹5 Lakh Crore Fractional Asset Pipeline",
+    "tag": "Regulatory Landmark",
+    "category": "SEBI Regulations",
+    "date": "October 2026",
+    "readTime": "5 min read",
+    "source": "SEBI Regulatory Gazette & WelNex Research",
+    "sourceUrl": "https://www.sebi.gov.in",
+    "excerpt": "SEBI's landmark framework for Small and Medium REITs brings commercial, warehousing, and industrial micro-assets under institutional trustee oversight with a ₹10 Lakh minimum investment threshold.",
+    "analysisSummary": "By establishing a dedicated migration pathway for unlisted fractional real estate SPVs into SEBI-regulated SM REITs, the regulator has eliminated opaque private structures, enforced 95% net distributable cash flow pass-through, and created exchange-listed secondary liquidity.",
+    "keyStat": {
+      "label": "Estimated Pipeline",
+      "value": "₹5,00,000 Cr GAV by 2030"
+    },
+    "imageAccent": "from-copper-700/40 via-amber-600/30 to-espresso-900/60"
+  },
+  "articles": [
+    {
+      "id": "radar-art-01",
+      "title": "Indian Commercial REITs Report 92% Average Occupancy Amid Strong GCC Expansion",
+      "category": "REITs & InvITs",
+      "date": "October 20, 2026",
+      "readTime": "4 min read",
+      "source": "WelNex Market Desk",
+      "summary": "Global Capability Centres (GCCs) drove 64% of total gross commercial absorption across Bengaluru, Hyderabad, and Pune micro-markets in H1 2026, bolstering quarterly distribution yields.",
+      "tags": ["REITs", "Office Leasing", "GCC Expansion", "Distribution Yield"],
+      "impactLevel": "High"
+    },
+    {
+      "id": "radar-art-02",
+      "title": "SEBI Mandates Standardized Valuation Norms for Category II Private Credit Funds",
+      "category": "AIF Updates",
+      "date": "October 14, 2026",
+      "readTime": "6 min read",
+      "source": "Securities and Exchange Board of India",
+      "summary": "New circular requires third-party independent valuation agencies to assess stressed debt assets and security cover on a quarterly basis, enhancing transparent Net Asset Value (NAV) reporting.",
+      "tags": ["AIF", "Private Credit", "SEBI Norms", "NAV Transparency"],
+      "impactLevel": "High"
+    },
+    {
+      "id": "radar-art-03",
+      "title": "InvITs Outperform 10Y G-Sec by 420 bps Spread as Power Transmission Demand Surges",
+      "category": "REITs & InvITs",
+      "date": "October 08, 2026",
+      "readTime": "4 min read",
+      "source": "Infrastructure Yield Monitor",
+      "summary": "Record national peak power demand exceeding 255 GW reinforced availability-based tariff collections for major transmission InvITs, sustaining double-digit annual distribution yields.",
+      "tags": ["InvITs", "Power Transmission", "Yield Spread", "G-Sec Benchmark"],
+      "impactLevel": "Medium"
+    },
+    {
+      "id": "radar-art-04",
+      "title": "Interest Rate Cycle Outlook: Why Alternative Yields Offer Downside Buffer",
+      "category": "Market Analysis",
+      "date": "October 02, 2026",
+      "readTime": "5 min read",
+      "source": "WelNex Macro Research",
+      "summary": "Analysis of RBI monetary policy trajectory and why commercial leases with 15% 3-year escalation clauses provide a durable inflation shield compared to fixed-coupon debt.",
+      "tags": ["Macro Analysis", "RBI Repo", "Inflation Hedge", "Real Returns"],
+      "impactLevel": "Medium"
+    },
+    {
+      "id": "radar-art-05",
+      "title": "SEBI NCS Framework Update: Standardized Credit Rating Disclosures for Retail SDIs",
+      "category": "SEBI Regulations",
+      "date": "September 26, 2026",
+      "readTime": "4 min read",
+      "source": "SEBI Debt Markets Division",
+      "summary": "Regulator introduces stricter underlying obligor disclosure guidelines for securitized debt instruments listed on NSE and BSE debt segments.",
+      "tags": ["SDI", "Securitized Debt", "SEBI NCS", "Retail Protection"],
+      "impactLevel": "Informational"
+    },
+    {
+      "id": "radar-art-06",
+      "title": "H1 2026 Private Credit Report: Senior Secured Real Estate Lending Crosses ₹18,000 Cr",
+      "category": "AIF Updates",
+      "date": "September 19, 2026",
+      "readTime": "5 min read",
+      "source": "Credit Intelligence Bureau",
+      "summary": "Institutional Category II AIFs accelerated last-mile residential and commercial bridge funding with 1.8x to 2.2x collateral cover, yielding 13.5%–15.0% internal rates of return.",
+      "tags": ["Private Credit", "Senior Debt", "Collateral Cover", "Category II AIF"],
+      "impactLevel": "High"
+    }
+  ],
+  "quickQueries": [
+    {
+      "query": "What is the new SEBI SM REIT limit?",
+      "response": "Under SEBI's March 2024 regulations, Small and Medium REITs (SM REITs) cover commercial or industrial asset portfolios with an aggregate asset value between ₹50 Crores and ₹500 Crores. The statutory minimum ticket size for retail investors is set at ₹10 Lakhs, and the trust must distribute at least 95% of Net Distributable Cash Flows.",
+      "keyPoints": [
+        "Portfolio Size: ₹50 Cr to ₹500 Cr",
+        "Minimum Retail Ticket: ₹10 Lakhs",
+        "Mandatory Distribution: 95% of NDCF",
+        "Statutory Requirement: 100% completed, revenue-generating property"
+      ],
+      "categoryTag": "SEBI Regulations"
+    },
+    {
+      "query": "How are InvIT distributions taxed in FY 2025-26?",
+      "response": "InvIT cash distributions are multi-component. Under current Indian Finance Act provisions: (1) Dividend income is typically tax-exempt if the SPV has not opted for concessional corporate tax; (2) Interest income is taxable at your marginal income slab; (3) Return of Capital (RoC) distributions are tax-deferred, reducing your asset acquisition cost basis until cost reaches zero, after which it is taxed as capital gains.",
+      "keyPoints": [
+        "Dividend: Tax-exempt or taxed at slab depending on SPV regime",
+        "Interest: Taxed at investor marginal slab",
+        "Return of Capital: Deferred capital gains adjustment",
+        "TDS: Applicable on interest component above statutory threshold"
+      ],
+      "categoryTag": "REITs & InvITs"
+    },
+    {
+      "query": "Difference between AIF Cat II and PMS?",
+      "response": "Portfolio Management Services (PMS) manage individual segregated demat accounts directly in your name with a statutory minimum entry of ₹50 Lakhs, predominantly trading listed equities. Category II Alternative Investment Funds (AIFs) are pooled, close-ended trusts with a ₹1 Crore minimum entry that invest in unlisted equity, private credit, and pre-IPO instruments with statutory tax pass-through status under Section 115UB.",
+      "keyPoints": [
+        "Minimum Entry: PMS ₹50 Lakhs vs. AIF ₹1 Crore",
+        "Structure: Segregated individual account (PMS) vs. Pooled close-ended trust (AIF)",
+        "Asset Focus: Listed equities (PMS) vs. Private debt & unlisted assets (AIF Cat II)",
+        "Tax Status: Direct capital gains (PMS) vs. Section 115UB pass-through (AIF)"
+      ],
+      "categoryTag": "AIF Updates"
+    },
+    {
+      "query": "What is NDCF (Net Distributable Cash Flow)?",
+      "response": "Net Distributable Cash Flow (NDCF) is the statutory metric governed by SEBI representing the actual cash available for distribution to unit-holders after deducting property operating expenses, debt service interest, and routine maintenance capital expenditure from gross rental or tariff collections. SEBI mandates that Indian REITs and InvITs distribute at least 90% of their NDCF.",
+      "keyPoints": [
+        "Cash, not accounting profit: Excludes non-cash depreciation and fair value adjustments",
+        "Statutory 90% payout rule enforced by SEBI",
+        "Calculated at both SPV level and Trust holding level",
+        "Guarantees that rental collections flow directly to unit-holders"
+      ],
+      "categoryTag": "Market Analysis"
+    }
+  ]
+}
