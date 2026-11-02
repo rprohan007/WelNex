@@ -254,17 +254,19 @@ export const GlassNav: React.FC<GlassNavProps> = ({
                         </button>
                       )}
 
-                      <button
-                        onClick={() => {
-                          setProfileDropdownOpen(false);
-                          window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-                          onOpenAdminLogin();
-                        }}
-                        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-espresso-800 hover:text-copper-700 hover:bg-copper-500/10 transition-colors text-left cursor-pointer"
-                      >
-                        <Shield className="w-3.5 h-3.5 text-copper-600" />
-                        <span>Admin CMS Dashboard</span>
-                      </button>
+                      {user.isAdmin && (
+                        <button
+                          onClick={() => {
+                            setProfileDropdownOpen(false);
+                            window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+                            onOpenAdminLogin();
+                          }}
+                          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-espresso-800 hover:text-copper-700 hover:bg-copper-500/10 transition-colors text-left cursor-pointer"
+                        >
+                          <Shield className="w-3.5 h-3.5 text-copper-600" />
+                          <span>Admin CMS Dashboard</span>
+                        </button>
+                      )}
 
                       <div className="my-1 border-t border-champagne-500/30" />
 
@@ -298,21 +300,6 @@ export const GlassNav: React.FC<GlassNavProps> = ({
                 <span>Sign In</span>
               </button>
             )}
-
-            {/* Admin Portal Quick Link */}
-            <Button
-              variant={currentView === 'admin' ? 'primary' : 'secondary'}
-              size="sm"
-              icon={<Shield className="w-3.5 h-3.5 text-copper-600" />}
-              iconPosition="left"
-              onClick={() => {
-                window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-                onOpenAdminLogin();
-              }}
-              className="text-xs tracking-wide uppercase font-semibold cursor-pointer"
-            >
-              {currentView === 'admin' ? 'Admin Portal' : 'Admin'}
-            </Button>
           </div>
 
           {/* Mobile Hamburger Button */}
@@ -397,22 +384,24 @@ export const GlassNav: React.FC<GlassNavProps> = ({
             })}
           </div>
 
-          <div className="pt-3 border-t border-champagne-500/30">
-            <Button
-              variant={currentView === 'admin' ? 'primary' : 'secondary'}
-              size="md"
-              icon={<Shield className="w-4 h-4 text-copper-600" />}
-              iconPosition="left"
-              onClick={() => {
-                setMobileMenuOpen(false);
-                window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-                onOpenAdminLogin();
-              }}
-              className="w-full text-xs uppercase tracking-wider font-semibold"
-            >
-              {currentView === 'admin' ? 'Admin Portal' : 'Admin Portal'}
-            </Button>
-          </div>
+          {user?.isAdmin && (
+            <div className="pt-3 border-t border-champagne-500/30">
+              <Button
+                variant={currentView === 'admin' ? 'primary' : 'secondary'}
+                size="md"
+                icon={<Shield className="w-4 h-4 text-copper-600" />}
+                iconPosition="left"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+                  onOpenAdminLogin();
+                }}
+                className="w-full text-xs uppercase tracking-wider font-semibold"
+              >
+                Admin Portal
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </nav>

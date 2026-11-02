@@ -10,6 +10,10 @@ export interface WelNexUser {
   imageUrl: string;
   isAdmin: boolean;
   role: string;
+  publicMetadata?: {
+    role?: string;
+    [key: string]: any;
+  };
 }
 
 interface AuthContextType {
@@ -30,7 +34,8 @@ const ADMIN_TEAM_STORAGE_KEY = 'welnex_admin_team';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function isEmailAuthorizedAdmin(email?: string): boolean {
+export function isEmailAuthorizedAdmin(email?: string, userMetadata?: { role?: string; [key: string]: any }): boolean {
+  if (userMetadata?.role === 'admin' || userMetadata?.role === 'super_admin') return true;
   if (!email) return false;
   const normalized = email.trim().toLowerCase();
   if (normalized === 'rprohan06@gmail.com') return true;
@@ -72,11 +77,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (stored) {
         const parsed: WelNexUser = JSON.parse(stored);
         // Refresh admin status dynamically in case admin team changed
-        const isAdmin = isEmailAuthorizedAdmin(parsed.primaryEmailAddress.emailAddress);
+        const isAdmin = isEmailAuthorizedAdmin(parsed.primaryEmailAddress?.emailAddress, parsed.publicMetadata);
         setUser({
           ...parsed,
           isAdmin,
-          role: isAdmin ? (parsed.primaryEmailAddress.emailAddress === 'rprohan06@gmail.com' ? 'Super Admin' : 'Admin') : 'Verified Investor'
+          role: isAdmin ? (parsed.primaryEmailAddress?.emailAddress === 'rprohan06@gmail.com' ? 'Super Admin' : 'Admin') : 'Verified Investor',
+          publicMetadata: {
+            role: isAdmin ? 'admin' : (parsed.publicMetadata?.role || 'investor')
+          }
         });
       }
     } catch (e) {
@@ -105,7 +113,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       },
       imageUrl,
       isAdmin,
-      role: isAdmin ? (email.toLowerCase().trim() === 'rprohan06@gmail.com' ? 'Super Admin' : 'Admin') : 'Verified Investor'
+      role: isAdmin ? (email.toLowerCase().trim() === 'rprohan06@gmail.com' ? 'Super Admin' : 'Admin') : 'Verified Investor',
+      publicMetadata: {
+        role: isAdmin ? 'admin' : 'investor'
+      }
     };
 
     setUser(newUser);

@@ -16,6 +16,7 @@ import { FinancialCalculatorsSuite } from './components/calculators/FinancialCal
 import { AcademyFramework } from './components/academy/AcademyFramework';
 import { WelNexRadarShell } from './components/radar/WelNexRadarShell';
 import { AdminCMSPortal } from './components/admin/AdminCMSPortal';
+import { ProtectedAdminRoute } from './components/auth/ProtectedAdminRoute';
 import { ContactUsPage } from './components/contact/ContactUsPage';
 import { VirtualSimulatorDashboard } from './components/simulator/VirtualSimulatorDashboard';
 import { getInvestmentById } from './data/investmentsData';
@@ -40,8 +41,9 @@ export default function App() {
       history.scrollRestoration = 'manual';
     }
 
-    // Check if initial hash is #admin
-    if (window.location.hash === '#admin') {
+    // Check if initial path or hash targets /admin
+    const isAdminPath = window.location.pathname === '/admin' || window.location.hash === '#admin';
+    if (isAdminPath) {
       setCurrentView('admin');
     }
   }, []);
@@ -300,12 +302,14 @@ export default function App() {
         </div>
       )}
 
-      {/* VIEW 9: PHASE 6 DEDICATED ADMIN CMS PORTAL (/admin) */}
+      {/* VIEW 9: PHASE 6 DEDICATED ADMIN CMS PORTAL (/admin) - STRICTLY ROLE GATED */}
       {currentView === 'admin' && (
-        <AdminCMSPortal
-          onBackToHome={handleBackToHome}
-          onOpenExplore={handleOpenExploreCatalogue}
-        />
+        <ProtectedAdminRoute onRedirectHome={handleBackToHome}>
+          <AdminCMSPortal
+            onBackToHome={handleBackToHome}
+            onOpenExplore={handleOpenExploreCatalogue}
+          />
+        </ProtectedAdminRoute>
       )}
 
       {/* VIEW 10: USER CONTACT US PAGE (/contact) */}
