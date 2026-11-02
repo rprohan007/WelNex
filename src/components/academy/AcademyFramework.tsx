@@ -43,7 +43,9 @@ export const AcademyFramework: React.FC<AcademyFrameworkProps> = ({
     getLessonStatus,
     getNextLesson,
     getPrevLesson,
-    stats
+    stats,
+    isSignedIn,
+    openAuthModal
   } = useAcademyData();
 
   const isModalOpen = selectedLesson !== null;
@@ -87,66 +89,99 @@ export const AcademyFramework: React.FC<AcademyFrameworkProps> = ({
         </div>
 
         {/* LEARNER PROGRESS & STATS BANNER */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3.5 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3.5 mb-8">
           
+          {/* Card 1: Total Syllabus Scope */}
           <div className="p-4 rounded-2xl bg-white/80 border border-champagne-500/40 shadow-glass-sm flex items-center gap-3.5">
             <div className="w-10 h-10 rounded-xl bg-copper-500/10 text-copper-600 flex items-center justify-center shrink-0">
               <BookOpen className="w-5 h-5" />
             </div>
-            <div>
-              <span className="text-[10px] uppercase font-bold text-espresso-500 block">
+            <div className="min-w-0">
+              <span className="text-[10px] uppercase font-bold text-espresso-500 block truncate">
                 Total Syllabus Scope
               </span>
-              <span className="font-mono font-bold text-base text-espresso-950">
+              <span className="font-mono font-bold text-base text-espresso-950 truncate block">
                 {stats.totalTopics} Topics • {stats.totalSubTopics} Chapters
               </span>
             </div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-white/80 border border-champagne-500/40 shadow-glass-sm flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-700 flex items-center justify-center shrink-0">
-              <CheckCircle2 className="w-5 h-5" />
-            </div>
-            <div>
-              <span className="text-[10px] uppercase font-bold text-espresso-500 block">
-                Your Progress
-              </span>
-              <span className="font-mono font-bold text-base text-emerald-800">
-                {stats.completedSubTopics}/{stats.totalSubTopics} Done ({stats.progressPercentage}%)
-              </span>
-            </div>
-          </div>
-
+          {/* Card 2: Estimated Reading Time */}
           <div className="p-4 rounded-2xl bg-white/80 border border-champagne-500/40 shadow-glass-sm flex items-center gap-3.5">
             <div className="w-10 h-10 rounded-xl bg-sand-300 text-espresso-800 flex items-center justify-center shrink-0">
               <Clock className="w-5 h-5" />
             </div>
-            <div>
-              <span className="text-[10px] uppercase font-bold text-espresso-500 block">
+            <div className="min-w-0">
+              <span className="text-[10px] uppercase font-bold text-espresso-500 block truncate">
                 Estimated Reading Time
               </span>
-              <span className="font-mono font-bold text-base text-espresso-950">
-                {stats.remainingMinutes} Mins Remaining
+              <span className="font-mono font-bold text-base text-espresso-950 truncate block">
+                {isSignedIn ? `${stats.remainingMinutes} Mins Remaining` : `${stats.totalEstimatedMinutes} Mins Total`}
               </span>
             </div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-gradient-to-r from-copper-500/15 via-champagne-500/20 to-transparent border border-copper-500/30 flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="text-[10px] uppercase font-bold text-copper-800 block">
-                Curriculum Mastery
-              </span>
-              <div className="w-28 h-2 rounded-full bg-sand-300 overflow-hidden">
-                <div
-                  className="h-full bg-copper-500 rounded-full transition-all duration-500"
-                  style={{ width: `${stats.progressPercentage}%` }}
-                />
+          {isSignedIn ? (
+            <>
+              {/* Card 3: Authenticated User Progress */}
+              <div className="p-4 rounded-2xl bg-white/80 border border-champagne-500/40 shadow-glass-sm flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-700 flex items-center justify-center shrink-0">
+                  <CheckCircle2 className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <span className="text-[10px] uppercase font-bold text-espresso-500 block truncate">
+                    Your Progress
+                  </span>
+                  <span className="font-mono font-bold text-base text-emerald-800 truncate block">
+                    {stats.completedSubTopics}/{stats.totalSubTopics} Done ({stats.progressPercentage}%)
+                  </span>
+                </div>
               </div>
+
+              {/* Card 4: Curriculum Mastery */}
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-copper-500/15 via-champagne-500/20 to-transparent border border-copper-500/30 flex items-center justify-between gap-3">
+                <div className="space-y-1 min-w-0 flex-1">
+                  <span className="text-[10px] uppercase font-bold text-copper-800 block truncate">
+                    Curriculum Mastery
+                  </span>
+                  <div className="w-full max-w-[120px] h-2 rounded-full bg-sand-300 overflow-hidden">
+                    <div
+                      className="h-full bg-copper-500 rounded-full transition-all duration-500"
+                      style={{ width: `${stats.progressPercentage}%` }}
+                    />
+                  </div>
+                </div>
+                <span className="font-mono font-black text-lg text-copper-700 shrink-0">
+                  {stats.progressPercentage}%
+                </span>
+              </div>
+            </>
+          ) : (
+            /* Guest Learner Callout spanning 2 columns */
+            <div className="sm:col-span-2 md:col-span-2 p-4 rounded-2xl bg-white/85 border border-copper-500/30 shadow-glass-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-xl bg-copper-500/10 text-copper-600 flex items-center justify-center shrink-0">
+                  <Sparkles className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <span className="text-[10px] uppercase font-bold text-copper-700 block">
+                    Personalized Tracking
+                  </span>
+                  <span className="text-xs sm:text-sm font-semibold text-espresso-900 block truncate">
+                    Sign in to track progress & chapter completion
+                  </span>
+                </div>
+              </div>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={openAuthModal}
+                className="text-xs font-semibold shrink-0 shadow-sm w-full sm:w-auto cursor-pointer"
+              >
+                Sign In to Track
+              </Button>
             </div>
-            <span className="font-mono font-black text-lg text-copper-700">
-              {stats.progressPercentage}%
-            </span>
-          </div>
+          )}
 
         </div>
 

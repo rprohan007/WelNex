@@ -1,16 +1,11 @@
 import React from 'react';
 import { Badge } from '../common/Badge';
 import { Button } from '../common/Button';
-import { GlassCard } from '../common/GlassCard';
 import { useScrollProgress } from '../../hooks/useScrollProgress';
 import { 
   ArrowRight, 
   ShieldCheck, 
-  TrendingUp, 
-  Sparkles, 
-  Building2, 
-  Zap, 
-  Coins 
+  Sparkles 
 } from 'lucide-react';
 
 interface HeroSectionProps {
@@ -29,7 +24,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   const backgroundBadgesTransform = `translate3d(0, ${scrollY * 0.18}px, 0)`;
 
   return (
-    <section id="hero" className="relative pt-32 pb-20 md:pt-36 md:pb-24 overflow-hidden bg-sand">
+    <section id="hero" className="relative pt-32 pb-16 md:pt-36 md:pb-20 overflow-hidden bg-sand">
       
       {/* Parallax Depth Layering - Background Ambient Liquid Gradient Orbs */}
       <div 
@@ -112,60 +107,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           </div>
 
           {/* Strict Educational Non-Brokerage Reassurance */}
-          <div className="inline-flex items-center justify-center gap-2 px-4 py-1.5 rounded-full bg-sand-200/90 border border-champagne-500/40 text-xs text-espresso-700 mb-12 shadow-sm">
+          <div className="inline-flex items-center justify-center gap-2 px-4 py-1.5 rounded-full bg-sand-200/90 border border-champagne-500/40 text-xs text-espresso-700 shadow-sm">
             <ShieldCheck className="w-4 h-4 text-copper-600" />
             <span>Strictly Educational & Discovery Platform • No Fund Pooling • Zero Brokerage Bias</span>
-          </div>
-
-          {/* Value Stats Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 max-w-4xl mx-auto text-left">
-            <GlassCard variant="subtle" className="p-4 sm:p-5 bg-white/70">
-              <div className="w-8 h-8 rounded-lg bg-copper-500/10 text-copper-600 flex items-center justify-center mb-3">
-                <Building2 className="w-4 h-4" />
-              </div>
-              <div className="text-2xl sm:text-3xl font-display font-extrabold text-espresso-900 font-mono">
-                ₹1.2L Cr+
-              </div>
-              <div className="text-xs text-espresso-600 mt-1 font-medium">
-                Underlying Assets Tracked
-              </div>
-            </GlassCard>
-
-            <GlassCard variant="subtle" className="p-4 sm:p-5 bg-white/70">
-              <div className="w-8 h-8 rounded-lg bg-copper-500/10 text-copper-600 flex items-center justify-center mb-3">
-                <TrendingUp className="w-4 h-4" />
-              </div>
-              <div className="text-2xl sm:text-3xl font-display font-extrabold text-espresso-900 font-mono">
-                7.5% – 13%
-              </div>
-              <div className="text-xs text-espresso-600 mt-1 font-medium">
-                Indicative Yield Spreads
-              </div>
-            </GlassCard>
-
-            <GlassCard variant="subtle" className="p-4 sm:p-5 bg-white/70">
-              <div className="w-8 h-8 rounded-lg bg-copper-500/10 text-copper-600 flex items-center justify-center mb-3">
-                <Zap className="w-4 h-4" />
-              </div>
-              <div className="text-2xl sm:text-3xl font-display font-extrabold text-espresso-900 font-mono">
-                1 Unit
-              </div>
-              <div className="text-xs text-espresso-600 mt-1 font-medium">
-                SEBI Retail Minimum Lot
-              </div>
-            </GlassCard>
-
-            <GlassCard variant="subtle" className="p-4 sm:p-5 bg-white/70">
-              <div className="w-8 h-8 rounded-lg bg-copper-500/10 text-copper-600 flex items-center justify-center mb-3">
-                <Coins className="w-4 h-4" />
-              </div>
-              <div className="text-2xl sm:text-3xl font-display font-extrabold text-espresso-900 font-mono">
-                90%+
-              </div>
-              <div className="text-xs text-espresso-600 mt-1 font-medium">
-                Mandatory Payout by Law
-              </div>
-            </GlassCard>
           </div>
 
         </div>

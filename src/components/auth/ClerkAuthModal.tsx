@@ -5,7 +5,6 @@ import { Badge } from '../common/Badge';
 import { WelNexLogo } from '../common/WelNexLogo';
 import {
   X,
-  ShieldCheck,
   Mail,
   User,
   ArrowRight
@@ -112,7 +111,7 @@ export const ClerkAuthModal: React.FC = () => {
           {/* PRIMARY GOOGLE OAUTH CTA */}
           <div className="space-y-3 mb-6">
             <button
-              onClick={() => handleGoogleOneClick('rprohan06@gmail.com', 'Rohan R. P.')}
+              onClick={() => handleGoogleOneClick()}
               disabled={isLoading}
               className="w-full py-3 px-4 rounded-2xl bg-white hover:bg-sand-50 text-espresso-900 border-2 border-champagne-500/60 hover:border-copper-500/60 shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-3 font-semibold text-xs sm:text-sm cursor-pointer group"
             >
@@ -137,28 +136,6 @@ export const ClerkAuthModal: React.FC = () => {
               </svg>
               <span>Continue with Google (Gmail)</span>
             </button>
-
-            {/* Quick Super Admin Login Preset */}
-            <div className="p-3 rounded-2xl bg-copper-500/10 border border-copper-500/30 flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-copper-700 shrink-0" />
-                <div>
-                  <span className="text-[11px] font-bold text-espresso-950 block">
-                    Super Admin Fast-Track
-                  </span>
-                  <span className="text-[10px] text-copper-800 font-mono">
-                    rprohan06@gmail.com
-                  </span>
-                </div>
-              </div>
-              <button
-                onClick={() => handleGoogleOneClick('rprohan06@gmail.com', 'Rohan R. P.')}
-                disabled={isLoading}
-                className="px-2.5 py-1 text-[11px] font-bold text-copper-700 bg-white/90 hover:bg-white rounded-lg border border-copper-500/40 shadow-xs cursor-pointer transition-colors"
-              >
-                Sign In
-              </button>
-            </div>
           </div>
 
           <div className="relative flex items-center justify-center my-5">

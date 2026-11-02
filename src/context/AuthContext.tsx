@@ -87,8 +87,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const signInWithGoogle = (customEmail?: string, customName?: string) => {
-    const email = customEmail ? customEmail.trim() : 'rprohan06@gmail.com';
-    const name = customName ? customName.trim() : (email.includes('rprohan') ? 'Rohan R. P.' : email.split('@')[0].replace(/[._]/g, ' '));
+    const email = customEmail ? customEmail.trim() : 'investor@gmail.com';
+    const name = customName ? customName.trim() : (customEmail ? customEmail.split('@')[0].replace(/[._]/g, ' ') : 'Verified Investor');
     const firstName = name.split(' ')[0];
     const isAdmin = isEmailAuthorizedAdmin(email);
 
@@ -105,7 +105,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       },
       imageUrl,
       isAdmin,
-      role: isAdmin ? (email === 'rprohan06@gmail.com' ? 'Super Admin' : 'Admin') : 'Verified Investor'
+      role: isAdmin ? (email.toLowerCase().trim() === 'rprohan06@gmail.com' ? 'Super Admin' : 'Admin') : 'Verified Investor'
     };
 
     setUser(newUser);

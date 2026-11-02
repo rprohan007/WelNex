@@ -421,14 +421,14 @@ export const CoreAlternativesStackedDeck: React.FC<CoreAlternativesStackedDeckPr
                       </div>
 
                       {/* Title & Tagline */}
-                      <h3 className="text-2xl sm:text-3xl font-display font-extrabold text-espresso-950 mb-1.5">
+                      <h3 className="text-2xl sm:text-3xl lg:text-4xl font-display font-extrabold text-espresso-950 mb-1.5 break-words">
                         {asset.name}
                       </h3>
-                      <p className="text-sm font-semibold text-copper-700 mb-4">
+                      <p className="text-sm font-semibold text-copper-700 mb-4 break-words">
                         {asset.tagline}
                       </p>
 
-                      <p className="text-xs sm:text-sm text-espresso-800 leading-relaxed mb-6 max-w-2xl">
+                      <p className="text-xs sm:text-sm text-espresso-800 leading-relaxed mb-6 max-w-2xl break-words">
                         {asset.description}
                       </p>
 

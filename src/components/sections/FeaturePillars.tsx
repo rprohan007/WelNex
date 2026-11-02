@@ -61,10 +61,10 @@ export const FeaturePillars: React.FC<FeaturePillarsProps> = ({
         <Badge variant="copper" size="sm" className="mb-3">
           The WelNex Platform Architecture
         </Badge>
-        <h2 className="text-3xl sm:text-4xl font-display font-extrabold text-espresso-950 mb-4">
+        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-display font-extrabold text-espresso-950 mb-4 break-words">
           Discover. Understand. Explore.
         </h2>
-        <p className="text-sm sm:text-base text-espresso-700 leading-relaxed">
+        <p className="text-sm sm:text-base text-espresso-700 leading-relaxed break-words">
           Built specifically for the Indian alternative wealth ecosystem—combining institutional analytics with educational clarity.
         </p>
       </div>
@@ -94,11 +94,11 @@ export const FeaturePillars: React.FC<FeaturePillarsProps> = ({
                   {pillar.tagline}
                 </Badge>
 
-                <h3 className="text-lg font-display font-bold text-espresso-950 mb-2.5 group-hover:text-copper-700 transition-colors">
+                <h3 className="text-lg font-display font-bold text-espresso-950 mb-2.5 group-hover:text-copper-700 transition-colors break-words">
                   {pillar.title}
                 </h3>
 
-                <p className="text-xs sm:text-sm text-espresso-700 leading-relaxed">
+                <p className="text-xs sm:text-sm text-espresso-700 leading-relaxed break-words">
                   {pillar.description}
                 </p>
               </div>

@@ -132,22 +132,19 @@ export const HowItWorksDeck: React.FC<HowItWorksDeckProps> = ({
                 {/* Left Step Information */}
                 <div className="lg:col-span-6 space-y-4 text-left">
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs font-bold text-copper-700 bg-copper-500/15 px-2.5 py-1 rounded-lg border border-copper-500/25">
-                      Card {step.stepNumber}
-                    </span>
                     <Badge variant="copper" size="sm">
                       {step.badge}
                     </Badge>
                   </div>
 
-                  <h3 className="text-2xl sm:text-3xl font-display font-extrabold text-espresso-950 flex items-center gap-3">
+                  <h3 className="text-2xl sm:text-3xl lg:text-4xl font-display font-extrabold text-espresso-950 flex items-center gap-3 break-words">
                     <span className="w-10 h-10 rounded-xl bg-copper-500/10 border border-copper-500/25 flex items-center justify-center text-copper-600 shrink-0">
                       <Icon className="w-5 h-5" />
                     </span>
-                    <span>{step.title}</span>
+                    <span className="break-words">{step.title}</span>
                   </h3>
 
-                  <p className="text-sm sm:text-base text-espresso-800 font-medium leading-relaxed">
+                  <p className="text-sm sm:text-base text-espresso-800 font-medium leading-relaxed break-words">
                     {step.subtitle}
                   </p>
 

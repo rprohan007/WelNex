@@ -2,9 +2,8 @@ import { useState, useMemo, useEffect, useCallback } from 'react';
 import type { Topic, SubTopic, LessonStatus, AcademyStats } from '../types/academy';
 import rawAcademyData from '../data/academyData.json';
 import { fetchAcademyDataFromSupabase } from '../services/academyService';
+import { useAuth } from '../context/AuthContext';
 
-const STORAGE_KEY_COMPLETED = 'welnex_academy_completed_lessons';
-const STORAGE_KEY_IN_PROGRESS = 'welnex_academy_inprogress_lessons';
 const STORAGE_KEY_TOPICS = 'welnex_custom_academy_topics';
 
 export const useAcademyData = () => {
@@ -39,47 +38,60 @@ export const useAcademyData = () => {
     refreshAcademyData();
   }, [refreshAcademyData]);
 
+  const { user, isSignedIn, openAuthModal } = useAuth();
+
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [expandedTopicIds, setExpandedTopicIds] = useState<string[]>([allTopics[0]?.id || 'topic-foundations']);
   const [selectedLesson, setSelectedLesson] = useState<SubTopic | null>(null);
 
-  // Completed Lessons State with localStorage backing
+  // Storage key uniquely scoped per user identity
+  const userStorageKey = useMemo(() => {
+    if (!isSignedIn || !user) return null;
+    const identifier = user.id || user.primaryEmailAddress?.emailAddress || 'default_user';
+    return `welnex_academy_user_progress_${identifier}`;
+  }, [isSignedIn, user]);
+
+  // Completed Lessons State initialized explicitly to 0% (empty array) for first-time or guest users
   const [completedLessonIds, setCompletedLessonIds] = useState<string[]>(() => {
+    if (!isSignedIn || !user) return [];
     try {
-      const stored = localStorage.getItem(STORAGE_KEY_COMPLETED);
-      return stored ? JSON.parse(stored) : ['lesson-foundations-01'];
+      const identifier = user.id || user.primaryEmailAddress?.emailAddress || 'default_user';
+      const stored = localStorage.getItem(`welnex_academy_user_progress_${identifier}`);
+      return stored ? JSON.parse(stored) : [];
     } catch {
-      return ['lesson-foundations-01'];
+      return [];
     }
   });
 
-  // In-Progress Lessons State
-  const [inProgressLessonIds, setInProgressLessonIds] = useState<string[]>(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY_IN_PROGRESS);
-      return stored ? JSON.parse(stored) : ['lesson-reits-01'];
-    } catch {
-      return ['lesson-reits-01'];
-    }
-  });
+  // In-Progress Lessons State (clean initial state)
+  const [inProgressLessonIds, setInProgressLessonIds] = useState<string[]>([]);
 
-  // Sync to localStorage
+  // Re-sync progress whenever authentication state or logged-in user changes
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY_COMPLETED, JSON.stringify(completedLessonIds));
-    } catch {
-      // ignore
+    if (isSignedIn && userStorageKey) {
+      try {
+        const stored = localStorage.getItem(userStorageKey);
+        setCompletedLessonIds(stored ? JSON.parse(stored) : []);
+      } catch {
+        setCompletedLessonIds([]);
+      }
+    } else {
+      // Guest or logged-out: reset to empty
+      setCompletedLessonIds([]);
     }
-  }, [completedLessonIds]);
+  }, [isSignedIn, userStorageKey]);
 
+  // Persist completed lessons only for authenticated users
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY_IN_PROGRESS, JSON.stringify(inProgressLessonIds));
-    } catch {
-      // ignore
+    if (isSignedIn && userStorageKey) {
+      try {
+        localStorage.setItem(userStorageKey, JSON.stringify(completedLessonIds));
+      } catch {
+        // ignore
+      }
     }
-  }, [inProgressLessonIds]);
+  }, [completedLessonIds, isSignedIn, userStorageKey]);
 
   // Dynamic Categories
   const categories = useMemo(() => {
@@ -134,8 +146,13 @@ export const useAcademyData = () => {
     return 'Unread';
   };
 
-  // Mark Complete toggle
+  // Mark Complete toggle (auth-gated)
   const markLessonComplete = (lessonId: string) => {
+    if (!isSignedIn) {
+      openAuthModal();
+      return;
+    }
+
     setCompletedLessonIds((prev) => {
       if (prev.includes(lessonId)) {
         return prev.filter((id) => id !== lessonId);
@@ -239,6 +256,8 @@ export const useAcademyData = () => {
     getNextLesson,
     getPrevLesson,
     findLessonById,
-    stats
+    stats,
+    isSignedIn,
+    openAuthModal
   };
 };

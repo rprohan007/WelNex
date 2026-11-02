@@ -188,7 +188,7 @@ export const LaunchAssetsStackedDeck: React.FC<LaunchAssetsStackedDeckProps> = (
                             <span className="text-[10px] uppercase font-bold tracking-wider text-copper-700 block">
                               Category 0{index + 1} of 05
                             </span>
-                            <h3 className="text-xl sm:text-2xl font-display font-extrabold text-espresso-950">
+                            <h3 className="text-xl sm:text-2xl lg:text-3xl font-display font-extrabold text-espresso-950 break-words">
                               {asset.name}
                             </h3>
                           </div>
@@ -207,7 +207,7 @@ export const LaunchAssetsStackedDeck: React.FC<LaunchAssetsStackedDeckProps> = (
                         </div>
                       </div>
 
-                      <p className="text-xs sm:text-sm text-espresso-700 font-medium mb-6 leading-relaxed max-w-2xl">
+                      <p className="text-xs sm:text-sm text-espresso-700 font-medium mb-6 leading-relaxed max-w-2xl break-words">
                         {asset.description}
                       </p>
 
