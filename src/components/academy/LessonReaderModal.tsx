@@ -16,9 +16,233 @@ import {
   Share2,
   XCircle,
   FileText,
-  Download
+  Download,
+  Maximize2,
+  Minimize2,
+  ExternalLink,
+  Eye
 } from 'lucide-react';
 
+
+function dataUriToBlob(dataUri: string): Blob | null {
+  try {
+    const parts = dataUri.split(',');
+    if (parts.length < 2) return null;
+    const mimeMatch = parts[0].match(/:(.*?);/);
+    const mimeType = mimeMatch ? mimeMatch[1] : 'application/pdf';
+    const byteString = atob(parts[1]);
+    const arrayBuffer = new ArrayBuffer(byteString.length);
+    const uint8Array = new Uint8Array(arrayBuffer);
+    for (let i = 0; i < byteString.length; i++) {
+      uint8Array[i] = byteString.charCodeAt(i);
+    }
+    return new Blob([uint8Array], { type: mimeType });
+  } catch (err) {
+    console.error('Failed to convert data URI to Blob', err);
+    return null;
+  }
+}
+
+interface EmbeddedDocumentViewerProps {
+  documentUrl: string;
+  title: string;
+  fileType?: string;
+  fileSize?: string;
+  chapterTitle: string;
+  downloadFileName?: string;
+}
+
+const EmbeddedDocumentViewer: React.FC<EmbeddedDocumentViewerProps> = ({
+  documentUrl,
+  title,
+  fileType = 'pdf',
+  fileSize,
+  chapterTitle,
+  downloadFileName
+}) => {
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const [isFullScreen, setIsFullScreen] = useState(false);
+
+  useEffect(() => {
+    if (!documentUrl) {
+      setBlobUrl(null);
+      return;
+    }
+
+    if (documentUrl.startsWith('data:')) {
+      const blob = dataUriToBlob(documentUrl);
+      if (blob) {
+        const url = URL.createObjectURL(blob);
+        setBlobUrl(url);
+        return () => {
+          URL.revokeObjectURL(url);
+        };
+      }
+    }
+    setBlobUrl(documentUrl);
+  }, [documentUrl]);
+
+  const effectiveSrc = blobUrl || documentUrl;
+  const isPdf = (fileType || 'pdf').toLowerCase().includes('pdf') || documentUrl.startsWith('data:application/pdf');
+
+  return (
+    <div className="rounded-2xl border border-amber-900/15 overflow-hidden shadow-sm bg-sand-50/50">
+      {/* FULL SCREEN MODAL OVERLAY */}
+      {isFullScreen && (
+        <div className="fixed inset-0 z-[100] bg-espresso-950/95 backdrop-blur-md flex flex-col p-3 sm:p-6 animate-fadeIn">
+          <div className="flex items-center justify-between pb-3 border-b border-champagne-500/30 text-white mb-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-8 h-8 rounded-lg bg-copper-500 text-white flex items-center justify-center shrink-0">
+                <FileText className="w-4 h-4" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="font-display font-bold text-sm sm:text-base text-white truncate">{title}</h3>
+                <p className="text-xs text-sand-300 truncate">{chapterTitle}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <a
+                href={effectiveSrc}
+                download={downloadFileName || 'document.pdf'}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-copper-500 hover:bg-copper-600 text-white text-xs font-bold transition-all shadow-sm"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Download</span>
+              </a>
+              <a
+                href={effectiveSrc}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all border border-white/20"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">New Tab</span>
+              </a>
+              <button
+                onClick={() => setIsFullScreen(false)}
+                className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+                title="Exit Full Screen"
+              >
+                <Minimize2 className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+          <div className="flex-1 w-full bg-slate-900 rounded-xl overflow-hidden border border-champagne-500/20 shadow-2xl">
+            <iframe
+              src={`${effectiveSrc}#toolbar=1&navpanes=0`}
+              title={title}
+              className="w-full h-full border-0"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* TOP TOOLBAR & ACTION BAR */}
+      <div className="p-3 sm:p-4 bg-gradient-to-r from-copper-500/10 via-champagne-500/20 to-transparent border-b border-amber-900/10 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-9 h-9 rounded-xl bg-copper-500 text-white flex items-center justify-center shrink-0 shadow-sm">
+            <FileText className="w-4 h-4" />
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 mb-0.5">
+              <span
+                className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase font-mono ${
+                  isPdf
+                    ? 'bg-rose-500/15 text-rose-700 border border-rose-500/30'
+                    : 'bg-amber-500/15 text-amber-800 border border-amber-500/30'
+                }`}
+              >
+                {fileType.toUpperCase()}
+              </span>
+              {fileSize && (
+                <span className="text-[11px] font-mono text-espresso-500 font-medium">
+                  {fileSize}
+                </span>
+              )}
+            </div>
+            <h5 className="font-display font-bold text-xs sm:text-sm text-espresso-950 truncate max-w-[200px] sm:max-w-md">
+              {title}
+            </h5>
+          </div>
+        </div>
+
+        {/* Action Controls */}
+        <div className="flex items-center gap-2 shrink-0">
+          <a
+            href={effectiveSrc}
+            download={downloadFileName || `${title}.pdf`}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-copper-500 hover:bg-copper-600 text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>Download PDF</span>
+          </a>
+
+          <button
+            onClick={() => setIsFullScreen(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-sand-100 text-espresso-800 border border-champagne-500/50 text-xs font-bold transition-all shadow-xs cursor-pointer"
+            title="Full Screen View"
+          >
+            <Maximize2 className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Full Screen View</span>
+          </button>
+
+          <a
+            href={effectiveSrc}
+            target="_blank"
+            rel="noreferrer"
+            className="p-1.5 rounded-xl bg-white hover:bg-sand-100 text-espresso-700 border border-champagne-500/50 transition-colors shadow-xs"
+            title="Open in new window"
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+          </a>
+        </div>
+      </div>
+
+      {/* DESKTOP & TABLET EMBEDDED IFRAME */}
+      <div className="hidden sm:block">
+        <iframe
+          src={`${effectiveSrc}#toolbar=1&navpanes=0`}
+          title={chapterTitle}
+          className="w-full h-[600px] rounded-xl border border-amber-900/10 shadow-inner bg-slate-900/5"
+        />
+      </div>
+
+      {/* MOBILE RESPONSIVE FALLBACK CARD */}
+      <div className="block sm:hidden p-5 bg-white/95 text-center space-y-3">
+        <div className="w-12 h-12 rounded-2xl bg-copper-500/15 text-copper-600 flex items-center justify-center mx-auto">
+          <FileText className="w-6 h-6" />
+        </div>
+        <div>
+          <p className="font-display font-bold text-sm text-espresso-950">{title}</p>
+          <p className="text-xs text-espresso-600 mt-0.5">
+            Embedded reader optimized for desktop. On mobile, launch full-screen preview or download file directly.
+          </p>
+        </div>
+        <div className="flex flex-col gap-2 pt-1">
+          <button
+            onClick={() => setIsFullScreen(true)}
+            className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-copper-500 hover:bg-copper-600 text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
+          >
+            <Eye className="w-4 h-4" />
+            <span>Launch Full Screen Viewer</span>
+          </button>
+          <a
+            href={effectiveSrc}
+            download={downloadFileName || `${title}.pdf`}
+            target="_blank"
+            rel="noreferrer"
+            className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-white hover:bg-sand-100 text-espresso-800 border border-champagne-500/50 text-xs font-semibold shadow-xs transition-all cursor-pointer"
+          >
+            <Download className="w-4 h-4" />
+            <span>Download PDF</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 interface LessonReaderModalProps {
   lesson: SubTopic | null;
@@ -47,6 +271,12 @@ export const LessonReaderModal: React.FC<LessonReaderModalProps> = ({
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, number>>({});
   const [copiedLink, setCopiedLink] = useState(false);
   const [resolvedBinaryUrls, setResolvedBinaryUrls] = useState<Record<string, string>>({});
+  const [activeResourceIndex, setActiveResourceIndex] = useState(0);
+
+  // Reset active resource when switching lessons
+  useEffect(() => {
+    setActiveResourceIndex(0);
+  }, [lesson?.id]);
 
   // Asynchronously hydrate IndexedDB-backed binary documents for offline viewing
   useEffect(() => {
@@ -115,6 +345,11 @@ export const LessonReaderModal: React.FC<LessonReaderModalProps> = ({
     }
     return list;
   }, [lesson]);
+
+  const activeResource = allResources[activeResourceIndex] || allResources[0];
+  const effectiveActiveUrl = activeResource
+    ? (resolvedBinaryUrls[activeResource.fileUrl] || activeResource.fileUrl)
+    : (lesson?.documentUrl ? (resolvedBinaryUrls[lesson.documentUrl] || lesson.documentUrl) : '');
 
   if (!isOpen) return null;
 
@@ -458,43 +693,56 @@ export const LessonReaderModal: React.FC<LessonReaderModalProps> = ({
                 </span>
               </div>
 
-              {/* Direct PDF Download / View Card if documentUrl exists */}
-              {lesson.documentUrl && (
-                <div className="p-4 rounded-2xl bg-gradient-to-r from-copper-500/10 via-champagne-500/15 to-transparent border border-copper-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-copper-500 text-white flex items-center justify-center shrink-0 shadow-sm">
-                      <FileText className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h5 className="font-display font-bold text-sm text-espresso-950">
-                        Official Chapter PDF Document
-                      </h5>
-                      <span className="text-[11px] text-espresso-600 block">
-                        Complete curriculum notes & technical reference material
-                      </span>
-                    </div>
-                  </div>
-                  <a
-                    href={resolvedBinaryUrls[lesson.documentUrl] || lesson.documentUrl}
-                    download={`${lesson.slug || 'chapter'}-document.pdf`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-copper-500 hover:bg-copper-600 text-white text-xs font-bold transition-all shadow-sm hover:shadow-md cursor-pointer shrink-0"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    <span>Download / Open PDF</span>
-                  </a>
+              {/* Document Selector Tabs if multiple resources exist */}
+              {allResources.length > 1 && (
+                <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+                  {allResources.map((res, idx) => {
+                    const isSelected = idx === activeResourceIndex;
+                    return (
+                      <button
+                        key={res.id || idx}
+                        onClick={() => setActiveResourceIndex(idx)}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
+                          isSelected
+                            ? 'bg-copper-500 text-white shadow-xs'
+                            : 'bg-white/80 text-espresso-700 hover:bg-copper-500/10 border border-champagne-500/30'
+                        }`}
+                      >
+                        <FileText className="w-3.5 h-3.5" />
+                        <span className="truncate max-w-[180px]">{res.title}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               )}
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {allResources.map((res) => {
+              {/* Embedded PDF / Document Viewer Component */}
+              {activeResource && effectiveActiveUrl ? (
+                <EmbeddedDocumentViewer
+                  documentUrl={effectiveActiveUrl}
+                  title={activeResource.title}
+                  fileType={activeResource.fileType}
+                  fileSize={activeResource.fileSize}
+                  chapterTitle={lesson.title}
+                  downloadFileName={`${lesson.slug || 'chapter'}-${activeResource.fileType || 'doc'}.pdf`}
+                />
+              ) : null}
+
+              {/* Additional Resource Cards Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                {allResources.map((res, idx) => {
                   const isPdf = res.fileType === 'pdf';
                   const effectiveFileUrl = resolvedBinaryUrls[res.fileUrl] || res.fileUrl;
+                  const isCurrentActive = idx === activeResourceIndex;
                   return (
                     <div
                       key={res.id}
-                      className="p-4 rounded-2xl bg-white/90 border border-champagne-500/40 hover:border-copper-500/50 shadow-sm transition-all flex flex-col justify-between"
+                      onClick={() => setActiveResourceIndex(idx)}
+                      className={`p-4 rounded-2xl bg-white/90 border shadow-sm transition-all flex flex-col justify-between cursor-pointer ${
+                        isCurrentActive
+                          ? 'border-copper-500 ring-2 ring-copper-500/20 bg-copper-500/5'
+                          : 'border-champagne-500/40 hover:border-copper-500/50'
+                      }`}
                     >
                       <div>
                         <div className="flex items-center justify-between gap-2 mb-2">
@@ -524,18 +772,27 @@ export const LessonReaderModal: React.FC<LessonReaderModalProps> = ({
                       </div>
 
                       <div className="pt-2 border-t border-champagne-500/25 flex items-center justify-between mt-2">
-                        <span className="text-[10px] text-espresso-500">
-                          Verified Academy Asset
-                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveResourceIndex(idx);
+                          }}
+                          className="text-[11px] text-copper-700 hover:text-copper-800 font-bold flex items-center gap-1 cursor-pointer"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>{isCurrentActive ? 'Viewing Above' : 'View in Reader'}</span>
+                        </button>
                         <a
                           href={effectiveFileUrl}
-                          download={res.title}
+                          download={`${res.title}.pdf`}
                           target="_blank"
                           rel="noreferrer"
+                          onClick={(e) => e.stopPropagation()}
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-copper-500/10 hover:bg-copper-500/20 text-copper-700 text-xs font-bold transition-colors cursor-pointer"
                         >
                           <Download className="w-3.5 h-3.5" />
-                          <span>Download / View</span>
+                          <span>Download</span>
                         </a>
                       </div>
                     </div>
