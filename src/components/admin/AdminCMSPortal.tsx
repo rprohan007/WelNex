@@ -60,7 +60,8 @@ import {
   deleteAcademyTopicFromSupabase,
   upsertAcademyChapterToSupabase,
   deleteAcademyChapterFromSupabase,
-  safeSaveAcademyTopicsToLocalStorage
+  safeSaveAcademyTopicsToLocalStorage,
+  uploadAcademyFileToSupabase
 } from '../../services/academyService';
 import { saveDocumentToIndexedDB } from '../../services/indexedDbStorage';
 import {
@@ -392,8 +393,9 @@ export const AdminCMSPortal: React.FC<AdminCMSPortalProps> = ({
   const [manualResTitle, setManualResTitle] = useState('');
   const [manualResType, setManualResType] = useState<'pdf' | 'ppt' | 'pptx'>('pdf');
   const [manualResUrl, setManualResUrl] = useState('');
+  const [isUploadingFile, setIsUploadingFile] = useState(false);
 
-  const handleFileUploadResource = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUploadResource = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -401,30 +403,34 @@ export const AdminCMSPortal: React.FC<AdminCMSPortalProps> = ({
     const fileType: 'pdf' | 'ppt' | 'pptx' = ext === 'ppt' ? 'ppt' : ext === 'pptx' ? 'pptx' : 'pdf';
     const sizeInMb = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
 
-    const reader = new FileReader();
-    reader.onload = (uploadEvent) => {
-      const result = (uploadEvent.target?.result as string) || '';
+    setIsUploadingFile(true);
+    try {
+      // Direct binary upload to public 'academy-resources' Supabase Storage bucket
+      const publicUrl = await uploadAcademyFileToSupabase(file);
       const resId = `res-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`;
-
-      // Store binary payload immediately in IndexedDB to bypass localStorage limits
-      saveDocumentToIndexedDB(resId, result);
 
       const newRes: ChapterResource = {
         id: resId,
         title: file.name.replace(/\.[^/.]+$/, ''),
         fileType,
-        fileUrl: result, // Base64 data string kept in memory for instant feedback
+        fileUrl: publicUrl, // Direct lightweight HTTPS public URL from Supabase Storage
         fileSize: sizeInMb,
         description: `Official ${fileType.toUpperCase()} reference document for this chapter.`
       };
+
       setChapterResources(prev => [...prev, newRes]);
       if (fileType === 'pdf') {
-        setChapterDocumentUrl(result);
+        setChapterDocumentUrl(publicUrl);
       } else {
-        setChapterSlidesUrl(result);
+        setChapterSlidesUrl(publicUrl);
       }
-    };
-    reader.readAsDataURL(file);
+    } catch (err: any) {
+      console.error('Failed to upload file to Supabase storage:', err);
+      alert(`Storage upload error: ${err.message || 'Could not upload file to academy-resources bucket'}`);
+    } finally {
+      setIsUploadingFile(false);
+      e.target.value = '';
+    }
   };
 
   const handleAddManualResource = () => {
@@ -2863,13 +2869,17 @@ export const AdminCMSPortal: React.FC<AdminCMSPortalProps> = ({
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                   />
                   <div className="flex items-center justify-center gap-2 pointer-events-none">
-                    <Upload className="w-4 h-4 text-copper-600" />
+                    {isUploadingFile ? (
+                      <div className="w-4 h-4 border-2 border-copper-600 border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Upload className="w-4 h-4 text-copper-600" />
+                    )}
                     <span className="text-xs font-bold text-espresso-900">
-                      Upload PDF Document or Presentation Slides
+                      {isUploadingFile ? 'Uploading to Supabase Storage (academy-resources)...' : 'Upload PDF Document or Presentation Slides'}
                     </span>
                   </div>
                   <span className="text-[10px] text-espresso-500 block mt-0.5 pointer-events-none">
-                    Accepts .pdf, .ppt, .pptx files. Automatically parses file size and format badge.
+                    Direct binary upload to public academy-resources bucket. Accepts .pdf, .ppt, .pptx files.
                   </span>
                 </div>
 

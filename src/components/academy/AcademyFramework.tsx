@@ -131,7 +131,7 @@ export const AcademyFramework: React.FC<AcademyFrameworkProps> = ({
                 Estimated Reading Time
               </span>
               <span className="font-mono font-bold text-base text-espresso-950 truncate block">
-                {isSignedIn ? `${stats.remainingMinutes} Mins Remaining` : `${totalMins} Mins Total`}
+                {totalTopics === 0 ? '0 Mins Total' : (isSignedIn ? `${stats.remainingMinutes} Mins Remaining` : `${totalMins} Mins Total`)}
               </span>
             </div>
           </div>

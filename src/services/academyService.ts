@@ -225,6 +225,47 @@ export function mergeTopicsWithLocalCache(incomingTopics: Topic[], cachedTopics:
 }
 
 /**
+ * Direct File Upload to public 'academy-resources' Supabase Storage bucket.
+ * Uploads raw PDF/PPT binary files directly to Supabase and returns the public HTTPS URL.
+ */
+export async function uploadAcademyFileToSupabase(file: File): Promise<string> {
+  if (!isSupabaseConfigured) {
+    throw new Error('Supabase is not configured.');
+  }
+
+  // Generate unique file path in academy-resources bucket
+  const fileExt = file.name.split('.').pop()?.toLowerCase() || 'pdf';
+  const cleanBaseName = file.name
+    .replace(/\.[^/.]+$/, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '-');
+  const filePath = `chapters/${Date.now()}-${cleanBaseName}.${fileExt}`;
+
+  const { data, error } = await supabase.storage
+    .from('academy-resources')
+    .upload(filePath, file, {
+      cacheControl: '3600',
+      upsert: true,
+      contentType: file.type || (fileExt === 'pdf' ? 'application/pdf' : 'application/octet-stream')
+    });
+
+  if (error) {
+    console.error('[academyService] Supabase Storage upload error:', error.message || error);
+    throw error;
+  }
+
+  const { data: publicUrlData } = supabase.storage
+    .from('academy-resources')
+    .getPublicUrl(data?.path || filePath);
+
+  if (!publicUrlData || !publicUrlData.publicUrl) {
+    throw new Error('Failed to retrieve public URL from Supabase storage.');
+  }
+
+  return publicUrlData.publicUrl;
+}
+
+/**
  * Fetch all Academy topics and nested chapters from Supabase
  */
 export async function fetchAcademyDataFromSupabase(): Promise<Topic[]> {
