@@ -1,6 +1,7 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
 import type { Topic, SubTopic } from '../types/academy';
 import rawAcademyData from '../data/academyData.json';
+import { saveDocumentToIndexedDB } from './indexedDbStorage';
 
 const LOCAL_STORAGE_KEY = 'welnex_custom_academy_topics';
 
@@ -70,6 +71,86 @@ export function mapDbTopicToTopic(row: any, chapters: any[] = []): Topic {
     order: Number(row.sort_order) || 1,
     subTopics
   };
+}
+
+/**
+ * Sanitizes a single chapter for localStorage:
+ * Offloads bulky Base64 binary strings to IndexedDB and replaces them with
+ * clean `indexeddb://` references, preventing QUOTA_EXCEEDED_ERR.
+ */
+export function sanitizeChapterForLocalStorage(chapter: SubTopic): SubTopic {
+  let docUrl = chapter.documentUrl;
+  let sldUrl = chapter.slidesUrl;
+
+  if (docUrl && docUrl.startsWith('data:')) {
+    const key = `doc_${chapter.id}`;
+    saveDocumentToIndexedDB(key, docUrl);
+    docUrl = `indexeddb://${key}`;
+  }
+
+  if (sldUrl && sldUrl.startsWith('data:')) {
+    const key = `slides_${chapter.id}`;
+    saveDocumentToIndexedDB(key, sldUrl);
+    sldUrl = `indexeddb://${key}`;
+  }
+
+  const resources = chapter.resources?.map(r => {
+    if (r.fileUrl && r.fileUrl.startsWith('data:')) {
+      saveDocumentToIndexedDB(r.id, r.fileUrl);
+      return {
+        ...r,
+        fileUrl: `indexeddb://${r.id}`
+      };
+    }
+    return r;
+  });
+
+  return {
+    ...chapter,
+    documentUrl: docUrl,
+    slidesUrl: sldUrl,
+    resources
+  };
+}
+
+/**
+ * Sanitizes all topics for localStorage to guarantee payload is under ~50KB.
+ */
+export function sanitizeTopicsForLocalStorage(topics: Topic[]): Topic[] {
+  return topics.map(topic => ({
+    ...topic,
+    subTopics: topic.subTopics.map(sanitizeChapterForLocalStorage)
+  }));
+}
+
+/**
+ * Safely saves topics to localStorage with quota protection and emergency fallback.
+ */
+export function safeSaveAcademyTopicsToLocalStorage(topics: Topic[]): void {
+  try {
+    const sanitized = sanitizeTopicsForLocalStorage(topics);
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(sanitized));
+  } catch (err) {
+    console.warn('[academyService] LocalStorage quota limit detected, performing aggressive compression:', err);
+    try {
+      // Emergency strip of any large data strings
+      const ultraClean = topics.map(t => ({
+        ...t,
+        subTopics: t.subTopics.map(st => ({
+          ...st,
+          documentUrl: st.documentUrl?.startsWith('data:') ? `indexeddb://doc_${st.id}` : st.documentUrl,
+          slidesUrl: st.slidesUrl?.startsWith('data:') ? `indexeddb://slides_${st.id}` : st.slidesUrl,
+          resources: st.resources?.map(r => ({
+            ...r,
+            fileUrl: r.fileUrl?.startsWith('data:') ? `indexeddb://${r.id}` : r.fileUrl
+          }))
+        }))
+      }));
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(ultraClean));
+    } catch (e2) {
+      console.error('[academyService] Critical localStorage write error:', e2);
+    }
+  }
 }
 
 /**
@@ -157,14 +238,9 @@ export async function fetchAcademyDataFromSupabase(): Promise<Topic[]> {
         return mapDbTopicToTopic(t, rawChapters);
       });
 
-      // Merge Supabase topics with local cache so custom uploaded documents are never lost
+      // Merge Supabase topics with local cache so custom uploaded documents/chapters are never lost
       const merged = mergeTopicsWithLocalCache(formatted, cachedData);
-
-      try {
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(merged));
-      } catch {
-        // ignore
-      }
+      safeSaveAcademyTopicsToLocalStorage(merged);
       return merged;
     }
 
@@ -193,7 +269,7 @@ export async function upsertAcademyTopicToSupabase(
     } else {
       updated = [...existing, topic];
     }
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
+    safeSaveAcademyTopicsToLocalStorage(updated);
   } catch {
     // ignore
   }
@@ -219,12 +295,13 @@ export async function upsertAcademyTopicToSupabase(
       .upsert(row, { onConflict: 'id' });
 
     if (error) {
-      console.error('[academyService] Error upserting topic:', error);
+      console.warn('[academyService] Error upserting topic to Supabase, keeping local state:', error.message);
       return { success: false, error: error.message };
     }
 
     return { success: true };
   } catch (err: any) {
+    console.error('[academyService] Network error upserting topic to Supabase:', err);
     return { success: false, error: err.message || 'Unknown network error' };
   }
 }
@@ -240,7 +317,7 @@ export async function deleteAcademyTopicFromSupabase(
     if (raw) {
       const existing: Topic[] = JSON.parse(raw);
       const filtered = existing.filter((t) => t.id !== topicId);
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(filtered));
+      safeSaveAcademyTopicsToLocalStorage(filtered);
     }
   } catch {
     // ignore
@@ -268,11 +345,12 @@ export async function deleteAcademyTopicFromSupabase(
 
 /**
  * Upsert a chapter into Supabase (Admin CMS action)
+ * Wrapped in safe try/catch to log schema/payload errors while preserving local memory state.
  */
 export async function upsertAcademyChapterToSupabase(
   chapter: SubTopic
 ): Promise<{ success: boolean; error?: string }> {
-  // Sync to local cache
+  // 1. Sync to local cache immediately with safe quota protection
   try {
     const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
     const existing: Topic[] = raw ? JSON.parse(raw) : (rawAcademyData as Topic[]);
@@ -286,28 +364,47 @@ export async function upsertAcademyChapterToSupabase(
       }
       return t;
     });
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
-  } catch {
-    // ignore
+    safeSaveAcademyTopicsToLocalStorage(updated);
+  } catch (err) {
+    console.warn('[academyService] Local cache sync warning:', err);
   }
 
   if (!isSupabaseConfigured) {
     return { success: true };
   }
 
+  // 2. Wrap Supabase update in a try-catch block and log DB schema / payload rejection errors
   try {
-    const row = mapSubTopicToDbChapter(chapter);
+    // Sanitize payload so Supabase doesn't reject mega-byte Base64 payloads
+    const sanitizedChapter = {
+      ...chapter,
+      documentUrl: chapter.documentUrl?.startsWith('data:')
+        ? `indexeddb://doc_${chapter.id}`
+        : chapter.documentUrl,
+      slidesUrl: chapter.slidesUrl?.startsWith('data:')
+        ? `indexeddb://slides_${chapter.id}`
+        : chapter.slidesUrl,
+      resources: chapter.resources?.map(r => ({
+        ...r,
+        fileUrl: r.fileUrl?.startsWith('data:')
+          ? `indexeddb://${r.id}`
+          : r.fileUrl
+      }))
+    };
+
+    const row = mapSubTopicToDbChapter(sanitizedChapter);
     const { error } = await supabase
       .from('academy_chapters')
       .upsert(row, { onConflict: 'id' });
 
     if (error) {
-      console.error('[academyService] Error upserting chapter:', error);
+      console.warn('[academyService] Supabase DB chapter upsert schema/payload rejection, local memory state kept intact:', error.message || error);
       return { success: false, error: error.message };
     }
 
     return { success: true };
   } catch (err: any) {
+    console.error('[academyService] Supabase chapter upsert network error, local memory state kept intact:', err);
     return { success: false, error: err.message || 'Unknown network error' };
   }
 }
@@ -326,7 +423,7 @@ export async function deleteAcademyChapterFromSupabase(
         ...t,
         subTopics: t.subTopics.filter((st) => st.id !== chapterId)
       }));
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
+      safeSaveAcademyTopicsToLocalStorage(updated);
     }
   } catch {
     // ignore

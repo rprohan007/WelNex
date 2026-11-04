@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import type { SubTopic, LessonStatus } from '../../types/academy';
 import { Badge } from '../common/Badge';
 import { Button } from '../common/Button';
+import { getDocumentFromIndexedDB } from '../../services/indexedDbStorage';
 import {
   X,
   Clock,
@@ -45,6 +46,48 @@ export const LessonReaderModal: React.FC<LessonReaderModalProps> = ({
   // Quiz selection state keyed by question id
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, number>>({});
   const [copiedLink, setCopiedLink] = useState(false);
+  const [resolvedBinaryUrls, setResolvedBinaryUrls] = useState<Record<string, string>>({});
+
+  // Asynchronously hydrate IndexedDB-backed binary documents for offline viewing
+  useEffect(() => {
+    if (!lesson) return;
+    let isMounted = true;
+
+    const resolveIndexedDbRefs = async () => {
+      const resolved: Record<string, string> = {};
+
+      if (lesson.documentUrl?.startsWith('indexeddb://')) {
+        const id = lesson.documentUrl.replace('indexeddb://', '');
+        const data = await getDocumentFromIndexedDB(id);
+        if (data) resolved[lesson.documentUrl] = data;
+      }
+
+      if (lesson.slidesUrl?.startsWith('indexeddb://')) {
+        const id = lesson.slidesUrl.replace('indexeddb://', '');
+        const data = await getDocumentFromIndexedDB(id);
+        if (data) resolved[lesson.slidesUrl] = data;
+      }
+
+      if (Array.isArray(lesson.resources)) {
+        for (const r of lesson.resources) {
+          if (r.fileUrl?.startsWith('indexeddb://')) {
+            const id = r.fileUrl.replace('indexeddb://', '');
+            const data = await getDocumentFromIndexedDB(id);
+            if (data) resolved[r.fileUrl] = data;
+          }
+        }
+      }
+
+      if (isMounted && Object.keys(resolved).length > 0) {
+        setResolvedBinaryUrls(prev => ({ ...prev, ...resolved }));
+      }
+    };
+
+    resolveIndexedDbRefs();
+    return () => {
+      isMounted = false;
+    };
+  }, [lesson]);
 
   // Consolidate resources, including direct documentUrl / slidesUrl
   const allResources = useMemo(() => {
@@ -432,7 +475,7 @@ export const LessonReaderModal: React.FC<LessonReaderModalProps> = ({
                     </div>
                   </div>
                   <a
-                    href={lesson.documentUrl}
+                    href={resolvedBinaryUrls[lesson.documentUrl] || lesson.documentUrl}
                     download={`${lesson.slug || 'chapter'}-document.pdf`}
                     target="_blank"
                     rel="noreferrer"
@@ -447,6 +490,7 @@ export const LessonReaderModal: React.FC<LessonReaderModalProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {allResources.map((res) => {
                   const isPdf = res.fileType === 'pdf';
+                  const effectiveFileUrl = resolvedBinaryUrls[res.fileUrl] || res.fileUrl;
                   return (
                     <div
                       key={res.id}
@@ -484,7 +528,7 @@ export const LessonReaderModal: React.FC<LessonReaderModalProps> = ({
                           Verified Academy Asset
                         </span>
                         <a
-                          href={res.fileUrl}
+                          href={effectiveFileUrl}
                           download={res.title}
                           target="_blank"
                           rel="noreferrer"

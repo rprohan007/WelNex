@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import type { Topic, SubTopic, LessonStatus, AcademyStats } from '../types/academy';
 import rawAcademyData from '../data/academyData.json';
-import { fetchAcademyDataFromSupabase } from '../services/academyService';
+import { fetchAcademyDataFromSupabase, mergeTopicsWithLocalCache } from '../services/academyService';
 import { useAuth } from '../context/AuthContext';
 
 const STORAGE_KEY_TOPICS = 'welnex_custom_academy_topics';
@@ -19,29 +19,42 @@ export const useAcademyData = () => {
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Dynamic Supabase Query on mount
+  // Dynamic Supabase Query on mount: hydrates from Supabase first, with robust local cache fallback
   const refreshAcademyData = useCallback(async () => {
     setIsLoading(true);
     try {
-      // Re-read latest custom modules and chapters from local storage first
+      // 1. Hydrate state from Supabase first
+      const liveTopics = await fetchAcademyDataFromSupabase();
+      if (Array.isArray(liveTopics) && liveTopics.length > 0) {
+        setAllTopics((prev) => mergeTopicsWithLocalCache(liveTopics, prev));
+      } else {
+        // Fall back to cached chapters from local storage without resetting freshly created chapters
+        const stored = localStorage.getItem(STORAGE_KEY_TOPICS);
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              setAllTopics((prev) => mergeTopicsWithLocalCache(parsed, prev));
+            }
+          } catch {
+            // ignore
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('[useAcademyData] Error refreshing academy topics from Supabase, preserving local chapters:', err);
+      // Fallback: keep existing in-memory state and merge with cached chapters
       const stored = localStorage.getItem(STORAGE_KEY_TOPICS);
       if (stored) {
         try {
           const parsed = JSON.parse(stored);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            setAllTopics(parsed);
+            setAllTopics((prev) => mergeTopicsWithLocalCache(parsed, prev));
           }
         } catch {
           // ignore
         }
       }
-
-      const liveTopics = await fetchAcademyDataFromSupabase();
-      if (liveTopics && liveTopics.length > 0) {
-        setAllTopics(liveTopics);
-      }
-    } catch (err) {
-      console.warn('[useAcademyData] Error refreshing academy topics from Supabase:', err);
     } finally {
       setIsLoading(false);
     }

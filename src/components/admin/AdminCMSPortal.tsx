@@ -60,8 +60,11 @@ import {
   upsertAcademyTopicToSupabase,
   deleteAcademyTopicFromSupabase,
   upsertAcademyChapterToSupabase,
-  deleteAcademyChapterFromSupabase
+  deleteAcademyChapterFromSupabase,
+  safeSaveAcademyTopicsToLocalStorage,
+  mergeTopicsWithLocalCache
 } from '../../services/academyService';
+import { saveDocumentToIndexedDB } from '../../services/indexedDbStorage';
 import {
   fetchWaitlistLeadsFromSupabase,
   updateWaitlistLeadStatusInSupabase,
@@ -235,11 +238,7 @@ export const AdminCMSPortal: React.FC<AdminCMSPortalProps> = ({
   }, [investments]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem('welnex_custom_academy_topics', JSON.stringify(academyTopics));
-    } catch {
-      // ignore
-    }
+    safeSaveAcademyTopicsToLocalStorage(academyTopics);
   }, [academyTopics]);
 
   // Load fresh data from Supabase
@@ -255,7 +254,9 @@ export const AdminCMSPortal: React.FC<AdminCMSPortalProps> = ({
         ]);
         if (!isMounted) return;
         if (liveInvs && liveInvs.length > 0) setInvestments(liveInvs);
-        if (liveTopics && liveTopics.length > 0) setAcademyTopics(liveTopics);
+        if (Array.isArray(liveTopics) && liveTopics.length > 0) {
+          setAcademyTopics(prev => mergeTopicsWithLocalCache(liveTopics, prev));
+        }
         if (Array.isArray(liveWaitlist)) setWaitlistLeads(liveWaitlist);
         if (Array.isArray(liveInquiries)) setInquiries(liveInquiries);
       } catch (err) {
@@ -405,11 +406,16 @@ export const AdminCMSPortal: React.FC<AdminCMSPortalProps> = ({
     const reader = new FileReader();
     reader.onload = (uploadEvent) => {
       const result = (uploadEvent.target?.result as string) || '';
+      const resId = `res-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`;
+
+      // Store binary payload immediately in IndexedDB to bypass localStorage limits
+      saveDocumentToIndexedDB(resId, result);
+
       const newRes: ChapterResource = {
-        id: `res-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+        id: resId,
         title: file.name.replace(/\.[^/.]+$/, ''),
         fileType,
-        fileUrl: result, // Base64 data string
+        fileUrl: result, // Base64 data string kept in memory for instant feedback
         fileSize: sizeInMb,
         description: `Official ${fileType.toUpperCase()} reference document for this chapter.`
       };
@@ -806,6 +812,13 @@ export const AdminCMSPortal: React.FC<AdminCMSPortalProps> = ({
       slidesUrl: sldUrl
     };
 
+    if (docUrl && docUrl.startsWith('data:')) {
+      saveDocumentToIndexedDB(`doc_${targetChapterId}`, docUrl);
+    }
+    if (sldUrl && sldUrl.startsWith('data:')) {
+      saveDocumentToIndexedDB(`slides_${targetChapterId}`, sldUrl);
+    }
+
     const updatedTopics = academyTopics.map(topic => {
       if (topic.id === activeParentTopicId) {
         const existingIdx = topic.subTopics.findIndex(st => st.id === targetChapterId);
@@ -821,14 +834,10 @@ export const AdminCMSPortal: React.FC<AdminCMSPortalProps> = ({
     });
 
     setAcademyTopics(updatedTopics);
-    try {
-      localStorage.setItem('welnex_custom_academy_topics', JSON.stringify(updatedTopics));
-    } catch (err) {
-      console.error('Failed to save academy topics to localStorage:', err);
-    }
+    safeSaveAcademyTopicsToLocalStorage(updatedTopics);
 
     setIsChapterModalOpen(false);
-    // Execute direct insert/upsert into Supabase
+    // Execute direct insert/upsert into Supabase (with safe schema/payload handling)
     await upsertAcademyChapterToSupabase(newSubTopic);
   };
 
@@ -845,11 +854,7 @@ export const AdminCMSPortal: React.FC<AdminCMSPortalProps> = ({
         return topic;
       });
       setAcademyTopics(updatedTopics);
-      try {
-        localStorage.setItem('welnex_custom_academy_topics', JSON.stringify(updatedTopics));
-      } catch (err) {
-        console.error('Failed to update academy topics in localStorage:', err);
-      }
+      safeSaveAcademyTopicsToLocalStorage(updatedTopics);
       await deleteAcademyChapterFromSupabase(subTopicId);
     }
   };
@@ -858,11 +863,7 @@ export const AdminCMSPortal: React.FC<AdminCMSPortalProps> = ({
     if (confirm(`Delete entire topic "${title}" and all its chapters?`)) {
       const filtered = academyTopics.filter(t => t.id !== topicId);
       setAcademyTopics(filtered);
-      try {
-        localStorage.setItem('welnex_custom_academy_topics', JSON.stringify(filtered));
-      } catch (err) {
-        console.error('Failed to update academy topics in localStorage:', err);
-      }
+      safeSaveAcademyTopicsToLocalStorage(filtered);
       await deleteAcademyTopicFromSupabase(topicId);
     }
   };
