@@ -23,6 +23,19 @@ export const useAcademyData = () => {
   const refreshAcademyData = useCallback(async () => {
     setIsLoading(true);
     try {
+      // Re-read latest custom modules and chapters from local storage first
+      const stored = localStorage.getItem(STORAGE_KEY_TOPICS);
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setAllTopics(parsed);
+          }
+        } catch {
+          // ignore
+        }
+      }
+
       const liveTopics = await fetchAcademyDataFromSupabase();
       if (liveTopics && liveTopics.length > 0) {
         setAllTopics(liveTopics);

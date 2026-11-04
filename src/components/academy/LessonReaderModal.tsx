@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import type { SubTopic, LessonStatus } from '../../types/academy';
 import { Badge } from '../common/Badge';
 import { Button } from '../common/Button';
@@ -45,6 +45,33 @@ export const LessonReaderModal: React.FC<LessonReaderModalProps> = ({
   // Quiz selection state keyed by question id
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, number>>({});
   const [copiedLink, setCopiedLink] = useState(false);
+
+  // Consolidate resources, including direct documentUrl / slidesUrl
+  const allResources = useMemo(() => {
+    if (!lesson) return [];
+    const list = Array.isArray(lesson.resources) ? [...lesson.resources] : [];
+    if (lesson.documentUrl && !list.some(r => r.fileUrl === lesson.documentUrl)) {
+      list.unshift({
+        id: `doc-${lesson.id}`,
+        title: `${lesson.title} - PDF Document`,
+        fileType: 'pdf' as const,
+        fileUrl: lesson.documentUrl,
+        fileSize: 'Curriculum PDF',
+        description: 'Official chapter curriculum document and technical notes.'
+      });
+    }
+    if (lesson.slidesUrl && !list.some(r => r.fileUrl === lesson.slidesUrl)) {
+      list.push({
+        id: `slides-${lesson.id}`,
+        title: `${lesson.title} - Presentation Slides`,
+        fileType: 'ppt' as const,
+        fileUrl: lesson.slidesUrl,
+        fileSize: 'Slide Deck',
+        description: 'Visual slide deck and lecture materials for this chapter.'
+      });
+    }
+    return list;
+  }, [lesson]);
 
   if (!isOpen) return null;
 
@@ -374,7 +401,7 @@ export const LessonReaderModal: React.FC<LessonReaderModalProps> = ({
           )}
 
           {/* CHAPTER DOCUMENTS & PRESENTATION SLIDES (Phase 6 Enhancement) */}
-          {lesson.resources && lesson.resources.length > 0 && (
+          {(allResources.length > 0 || lesson.documentUrl) && (
             <div className="space-y-4 pt-4 border-t border-champagne-500/30">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -384,12 +411,41 @@ export const LessonReaderModal: React.FC<LessonReaderModalProps> = ({
                   </h4>
                 </div>
                 <span className="text-xs text-espresso-600 font-medium">
-                  {lesson.resources.length} Downloadable {lesson.resources.length === 1 ? 'Resource' : 'Resources'}
+                  {allResources.length} Downloadable {allResources.length === 1 ? 'Resource' : 'Resources'}
                 </span>
               </div>
 
+              {/* Direct PDF Download / View Card if documentUrl exists */}
+              {lesson.documentUrl && (
+                <div className="p-4 rounded-2xl bg-gradient-to-r from-copper-500/10 via-champagne-500/15 to-transparent border border-copper-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-copper-500 text-white flex items-center justify-center shrink-0 shadow-sm">
+                      <FileText className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h5 className="font-display font-bold text-sm text-espresso-950">
+                        Official Chapter PDF Document
+                      </h5>
+                      <span className="text-[11px] text-espresso-600 block">
+                        Complete curriculum notes & technical reference material
+                      </span>
+                    </div>
+                  </div>
+                  <a
+                    href={lesson.documentUrl}
+                    download={`${lesson.slug || 'chapter'}-document.pdf`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-copper-500 hover:bg-copper-600 text-white text-xs font-bold transition-all shadow-sm hover:shadow-md cursor-pointer shrink-0"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Download / Open PDF</span>
+                  </a>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {lesson.resources.map((res) => {
+                {allResources.map((res) => {
                   const isPdf = res.fileType === 'pdf';
                   return (
                     <div

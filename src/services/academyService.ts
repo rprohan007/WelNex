@@ -21,7 +21,9 @@ export function mapDbChapterToSubTopic(row: any): SubTopic {
     contentSections: Array.isArray(row.content_sections) ? row.content_sections : [],
     numericalExamples: Array.isArray(row.numerical_examples) ? row.numerical_examples : undefined,
     quizQuestions: Array.isArray(row.quiz_questions) ? row.quiz_questions : undefined,
-    resources: Array.isArray(row.resources) ? row.resources : undefined
+    resources: Array.isArray(row.resources) ? row.resources : undefined,
+    documentUrl: row.document_url || row.documentUrl || undefined,
+    slidesUrl: row.slides_url || row.slidesUrl || undefined
   };
 }
 
@@ -43,6 +45,8 @@ export function mapSubTopicToDbChapter(chapter: SubTopic): any {
     numerical_examples: chapter.numericalExamples || [],
     quiz_questions: chapter.quizQuestions || [],
     resources: chapter.resources || [],
+    document_url: chapter.documentUrl || null,
+    slides_url: chapter.slidesUrl || null,
     updated_at: new Date().toISOString()
   };
 }
@@ -69,6 +73,54 @@ export function mapDbTopicToTopic(row: any, chapters: any[] = []): Topic {
 }
 
 /**
+ * Merges freshly fetched topics with locally cached topics to guarantee
+ * that custom chapters, Base64 document attachments, and slide decks
+ * are never wiped or reset by stale network responses.
+ */
+export function mergeTopicsWithLocalCache(incomingTopics: Topic[], cachedTopics: Topic[]): Topic[] {
+  if (!cachedTopics || cachedTopics.length === 0) return incomingTopics;
+  if (!incomingTopics || incomingTopics.length === 0) return cachedTopics;
+
+  const cachedTopicMap = new Map<string, Topic>();
+  cachedTopics.forEach(t => cachedTopicMap.set(t.id, t));
+
+  const mergedTopics: Topic[] = incomingTopics.map(inTopic => {
+    const cachedTopic = cachedTopicMap.get(inTopic.id);
+    if (!cachedTopic) return inTopic;
+
+    const cachedSubMap = new Map<string, SubTopic>();
+    cachedTopic.subTopics.forEach(st => cachedSubMap.set(st.id, st));
+
+    // Merge subtopics, preserving attached documentUrl, slidesUrl, and resources
+    const mergedSubs = inTopic.subTopics.map(inSub => {
+      const cachedSub = cachedSubMap.get(inSub.id);
+      if (!cachedSub) return inSub;
+      return {
+        ...inSub,
+        documentUrl: cachedSub.documentUrl || inSub.documentUrl,
+        slidesUrl: cachedSub.slidesUrl || inSub.slidesUrl,
+        resources: (cachedSub.resources && cachedSub.resources.length > 0) ? cachedSub.resources : inSub.resources
+      };
+    });
+
+    // Also preserve custom chapters in cache that aren't yet in the remote database
+    const inSubIds = new Set(inTopic.subTopics.map(st => st.id));
+    const extraCachedSubs = cachedTopic.subTopics.filter(st => !inSubIds.has(st.id));
+
+    return {
+      ...inTopic,
+      subTopics: [...mergedSubs, ...extraCachedSubs]
+    };
+  });
+
+  // Also preserve entirely new topics created locally
+  const inTopicIds = new Set(incomingTopics.map(t => t.id));
+  const extraCachedTopics = cachedTopics.filter(t => !inTopicIds.has(t.id));
+
+  return [...mergedTopics, ...extraCachedTopics];
+}
+
+/**
  * Fetch all Academy topics and nested chapters from Supabase
  */
 export async function fetchAcademyDataFromSupabase(): Promise<Topic[]> {
@@ -81,8 +133,10 @@ export async function fetchAcademyDataFromSupabase(): Promise<Topic[]> {
     }
   };
 
+  const cachedData = getFallback();
+
   if (!isSupabaseConfigured) {
-    return getFallback();
+    return cachedData;
   }
 
   try {
@@ -94,7 +148,7 @@ export async function fetchAcademyDataFromSupabase(): Promise<Topic[]> {
 
     if (topicsError) {
       console.warn('[academyService] Supabase topics query error, using local fallback:', topicsError.message);
-      return getFallback();
+      return cachedData;
     }
 
     if (topicsData && topicsData.length > 0) {
@@ -103,18 +157,21 @@ export async function fetchAcademyDataFromSupabase(): Promise<Topic[]> {
         return mapDbTopicToTopic(t, rawChapters);
       });
 
+      // Merge Supabase topics with local cache so custom uploaded documents are never lost
+      const merged = mergeTopicsWithLocalCache(formatted, cachedData);
+
       try {
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(formatted));
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(merged));
       } catch {
         // ignore
       }
-      return formatted;
+      return merged;
     }
 
-    return getFallback();
+    return cachedData;
   } catch (err) {
     console.error('[academyService] Network error fetching academy data:', err);
-    return getFallback();
+    return cachedData;
   }
 }
 

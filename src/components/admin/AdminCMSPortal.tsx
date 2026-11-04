@@ -28,7 +28,8 @@ import {
   Eye,
   Radio,
   Calendar,
-  Zap
+  Zap,
+  FileText
 } from 'lucide-react';
 import { marketDataService } from '../../services/marketDataService';
 import rawInvestments from '../../data/investmentsData.json';
@@ -386,6 +387,9 @@ export const AdminCMSPortal: React.FC<AdminCMSPortalProps> = ({
 
   // Chapter Resource Attachments Helpers (Prompt Requirement 2)
   const [chapterResources, setChapterResources] = useState<ChapterResource[]>([]);
+  const [chapterDocumentUrl, setChapterDocumentUrl] = useState<string>('');
+  const [chapterSlidesUrl, setChapterSlidesUrl] = useState<string>('');
+  const [editingChapterId, setEditingChapterId] = useState<string | null>(null);
   const [manualResTitle, setManualResTitle] = useState('');
   const [manualResType, setManualResType] = useState<'pdf' | 'ppt' | 'pptx'>('pdf');
   const [manualResUrl, setManualResUrl] = useState('');
@@ -396,20 +400,25 @@ export const AdminCMSPortal: React.FC<AdminCMSPortalProps> = ({
 
     const ext = file.name.split('.').pop()?.toLowerCase();
     const fileType: 'pdf' | 'ppt' | 'pptx' = ext === 'ppt' ? 'ppt' : ext === 'pptx' ? 'pptx' : 'pdf';
-    const sizeInMb = (file.size / (1024 * 1024)).toFixed(1) + ' MB';
+    const sizeInMb = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
 
     const reader = new FileReader();
     reader.onload = (uploadEvent) => {
       const result = (uploadEvent.target?.result as string) || '';
       const newRes: ChapterResource = {
-        id: `res-${Date.now()}`,
+        id: `res-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
         title: file.name.replace(/\.[^/.]+$/, ''),
         fileType,
-        fileUrl: result || `https://assets.welnex.in/curriculum/${file.name}`,
+        fileUrl: result, // Base64 data string
         fileSize: sizeInMb,
         description: `Official ${fileType.toUpperCase()} reference document for this chapter.`
       };
       setChapterResources(prev => [...prev, newRes]);
+      if (fileType === 'pdf') {
+        setChapterDocumentUrl(result);
+      } else {
+        setChapterSlidesUrl(result);
+      }
     };
     reader.readAsDataURL(file);
   };
@@ -417,7 +426,7 @@ export const AdminCMSPortal: React.FC<AdminCMSPortalProps> = ({
   const handleAddManualResource = () => {
     if (!manualResTitle || !manualResUrl) return;
     const newRes: ChapterResource = {
-      id: `res-${Date.now()}`,
+      id: `res-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
       title: manualResTitle,
       fileType: manualResType,
       fileUrl: manualResUrl,
@@ -425,12 +434,24 @@ export const AdminCMSPortal: React.FC<AdminCMSPortalProps> = ({
       description: `Curated ${manualResType.toUpperCase()} slides for chapter review.`
     };
     setChapterResources(prev => [...prev, newRes]);
+    if (manualResType === 'pdf') {
+      setChapterDocumentUrl(manualResUrl);
+    } else {
+      setChapterSlidesUrl(manualResUrl);
+    }
     setManualResTitle('');
     setManualResUrl('');
   };
 
   const handleRemoveResource = (id: string) => {
-    setChapterResources(prev => prev.filter(r => r.id !== id));
+    setChapterResources(prev => {
+      const filtered = prev.filter(r => r.id !== id);
+      const remainingDoc = filtered.find(r => r.fileType === 'pdf')?.fileUrl || '';
+      const remainingSlide = filtered.find(r => r.fileType !== 'pdf')?.fileUrl || '';
+      setChapterDocumentUrl(remainingDoc);
+      setChapterSlidesUrl(remainingSlide);
+      return filtered;
+    });
   };
 
   // Investment CRUD Actions
@@ -684,6 +705,7 @@ export const AdminCMSPortal: React.FC<AdminCMSPortalProps> = ({
 
   const handleOpenAddChapter = (topicId: string) => {
     setActiveParentTopicId(topicId);
+    setEditingChapterId(null);
     setChapterTitle('');
     setChapterDifficulty('Beginner');
     setChapterDuration('8 mins');
@@ -693,6 +715,50 @@ export const AdminCMSPortal: React.FC<AdminCMSPortalProps> = ({
     setChapterQuizCorrectIndex(0);
     setChapterQuizExplanation('');
     setChapterResources([]);
+    setChapterDocumentUrl('');
+    setChapterSlidesUrl('');
+    setManualResTitle('');
+    setManualResUrl('');
+    setIsChapterModalOpen(true);
+  };
+
+  const handleOpenEditChapter = (topicId: string, sub: SubTopic) => {
+    setActiveParentTopicId(topicId);
+    setEditingChapterId(sub.id);
+    setChapterTitle(sub.title);
+    setChapterDifficulty(sub.difficulty);
+    setChapterDuration(sub.estimatedReadingTime);
+    setChapterContent(sub.contentSections?.[0]?.paragraphs?.[0] || sub.summary || '');
+    setChapterQuizQuestion(sub.quizQuestions?.[0]?.question || '');
+    setChapterQuizOptions(sub.quizQuestions?.[0]?.options?.join(', ') || 'Option A, Option B, Option C, Option D');
+    setChapterQuizCorrectIndex(sub.quizQuestions?.[0]?.correctOptionIndex || 0);
+    setChapterQuizExplanation(sub.quizQuestions?.[0]?.explanation || '');
+
+    const existingResources: ChapterResource[] = Array.isArray(sub.resources) ? [...sub.resources] : [];
+    if (sub.documentUrl && !existingResources.some(r => r.fileUrl === sub.documentUrl)) {
+      existingResources.unshift({
+        id: `res-doc-${sub.id}`,
+        title: `${sub.title} PDF Document`,
+        fileType: 'pdf',
+        fileUrl: sub.documentUrl,
+        fileSize: 'Curriculum PDF',
+        description: 'Attached official PDF document.'
+      });
+    }
+    if (sub.slidesUrl && !existingResources.some(r => r.fileUrl === sub.slidesUrl)) {
+      existingResources.push({
+        id: `res-slides-${sub.id}`,
+        title: `${sub.title} Slides`,
+        fileType: 'ppt',
+        fileUrl: sub.slidesUrl,
+        fileSize: 'Slide Deck',
+        description: 'Attached presentation slides.'
+      });
+    }
+
+    setChapterResources(existingResources);
+    setChapterDocumentUrl(sub.documentUrl || '');
+    setChapterSlidesUrl(sub.slidesUrl || '');
     setManualResTitle('');
     setManualResUrl('');
     setIsChapterModalOpen(true);
@@ -705,8 +771,12 @@ export const AdminCMSPortal: React.FC<AdminCMSPortalProps> = ({
     const parsedOptions = chapterQuizOptions.split(',').map(s => s.trim()).filter(Boolean);
     const durationMins = parseInt(chapterDuration.replace(/[^0-9]/g, '')) || 8;
 
+    const docUrl = chapterDocumentUrl || chapterResources.find(r => r.fileType === 'pdf')?.fileUrl || undefined;
+    const sldUrl = chapterSlidesUrl || chapterResources.find(r => r.fileType !== 'pdf')?.fileUrl || undefined;
+    const targetChapterId = editingChapterId || `subtopic-${Date.now()}`;
+
     const newSubTopic: SubTopic = {
-      id: `subtopic-${Date.now()}`,
+      id: targetChapterId,
       topicId: activeParentTopicId,
       title: chapterTitle,
       slug: chapterTitle.toLowerCase().replace(/[^a-z0-9]/g, '-'),
@@ -731,18 +801,31 @@ export const AdminCMSPortal: React.FC<AdminCMSPortalProps> = ({
           explanation: chapterQuizExplanation || 'Explanation verified according to institutional SEBI rules.'
         }
       ] : undefined,
-      resources: chapterResources.length > 0 ? chapterResources : undefined
+      resources: chapterResources.length > 0 ? chapterResources : undefined,
+      documentUrl: docUrl,
+      slidesUrl: sldUrl
     };
 
-    setAcademyTopics(prev => prev.map(topic => {
+    const updatedTopics = academyTopics.map(topic => {
       if (topic.id === activeParentTopicId) {
+        const existingIdx = topic.subTopics.findIndex(st => st.id === targetChapterId);
+        const updatedSubs = existingIdx >= 0
+          ? topic.subTopics.map((st, i) => (i === existingIdx ? newSubTopic : st))
+          : [...topic.subTopics, newSubTopic];
         return {
           ...topic,
-          subTopics: [...topic.subTopics, newSubTopic]
+          subTopics: updatedSubs
         };
       }
       return topic;
-    }));
+    });
+
+    setAcademyTopics(updatedTopics);
+    try {
+      localStorage.setItem('welnex_custom_academy_topics', JSON.stringify(updatedTopics));
+    } catch (err) {
+      console.error('Failed to save academy topics to localStorage:', err);
+    }
 
     setIsChapterModalOpen(false);
     // Execute direct insert/upsert into Supabase
@@ -751,7 +834,7 @@ export const AdminCMSPortal: React.FC<AdminCMSPortalProps> = ({
 
   const handleDeleteChapter = async (topicId: string, subTopicId: string) => {
     if (confirm('Delete this chapter from curriculum?')) {
-      setAcademyTopics(prev => prev.map(topic => {
+      const updatedTopics = academyTopics.map(topic => {
         if (topic.id === topicId) {
           const filtered = topic.subTopics.filter(st => st.id !== subTopicId);
           return {
@@ -760,14 +843,26 @@ export const AdminCMSPortal: React.FC<AdminCMSPortalProps> = ({
           };
         }
         return topic;
-      }));
+      });
+      setAcademyTopics(updatedTopics);
+      try {
+        localStorage.setItem('welnex_custom_academy_topics', JSON.stringify(updatedTopics));
+      } catch (err) {
+        console.error('Failed to update academy topics in localStorage:', err);
+      }
       await deleteAcademyChapterFromSupabase(subTopicId);
     }
   };
 
   const handleDeleteTopic = async (topicId: string, title: string) => {
     if (confirm(`Delete entire topic "${title}" and all its chapters?`)) {
-      setAcademyTopics(prev => prev.filter(t => t.id !== topicId));
+      const filtered = academyTopics.filter(t => t.id !== topicId);
+      setAcademyTopics(filtered);
+      try {
+        localStorage.setItem('welnex_custom_academy_topics', JSON.stringify(filtered));
+      } catch (err) {
+        console.error('Failed to update academy topics in localStorage:', err);
+      }
       await deleteAcademyTopicFromSupabase(topicId);
     }
   };
@@ -1323,7 +1418,7 @@ export const AdminCMSPortal: React.FC<AdminCMSPortalProps> = ({
                                   <span className="text-xs font-bold text-espresso-950 block">
                                     {sub.title}
                                   </span>
-                                  <div className="flex items-center gap-2 mt-0.5 text-[10px] text-espresso-600">
+                                  <div className="flex flex-wrap items-center gap-2 mt-0.5 text-[10px] text-espresso-600">
                                     <span className="font-semibold text-copper-700">{sub.difficulty}</span>
                                     <span>•</span>
                                     <span>{sub.estimatedReadingTime}</span>
@@ -1333,17 +1428,35 @@ export const AdminCMSPortal: React.FC<AdminCMSPortalProps> = ({
                                         <span className="text-emerald-700 font-medium">Includes Quiz ({sub.quizQuestions.length} Qs)</span>
                                       </>
                                     )}
+                                    {(sub.documentUrl || (sub.resources && sub.resources.length > 0)) && (
+                                      <>
+                                        <span>•</span>
+                                        <span className="text-copper-700 font-bold inline-flex items-center gap-1 bg-copper-500/10 px-1.5 py-0.5 rounded">
+                                          <FileText className="w-3 h-3" />
+                                          <span>Document Attached</span>
+                                        </span>
+                                      </>
+                                    )}
                                   </div>
                                 </div>
                               </div>
 
-                              <button
-                                onClick={() => handleDeleteChapter(topic.id, sub.id)}
-                                className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 transition-colors"
-                                title="Delete Chapter"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={() => handleOpenEditChapter(topic.id, sub)}
+                                  className="p-1.5 rounded-lg text-copper-700 hover:bg-copper-50 transition-colors cursor-pointer"
+                                  title="Edit Chapter & Documents"
+                                >
+                                  <Edit3 className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteChapter(topic.id, sub.id)}
+                                  className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                                  title="Delete Chapter"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
                             </div>
                           ))
                         )}
@@ -2593,11 +2706,11 @@ export const AdminCMSPortal: React.FC<AdminCMSPortalProps> = ({
           <div className="w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-3xl bg-sand border border-champagne-500/50 shadow-2xl p-6 sm:p-8">
             <div className="flex items-center justify-between pb-4 border-b border-champagne-500/30 mb-5">
               <h3 className="text-xl font-display font-bold text-espresso-950">
-                Add Chapter to Curriculum
+                {editingChapterId ? 'Edit Chapter & Attached Documents' : 'Add Chapter to Curriculum'}
               </h3>
               <button
                 onClick={() => setIsChapterModalOpen(false)}
-                className="p-1.5 rounded-full hover:bg-espresso-700/10 text-espresso-700"
+                className="p-1.5 rounded-full hover:bg-espresso-700/10 text-espresso-700 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -2818,8 +2931,8 @@ export const AdminCMSPortal: React.FC<AdminCMSPortalProps> = ({
                 <Button type="button" variant="secondary" size="sm" onClick={() => setIsChapterModalOpen(false)}>
                   Cancel
                 </Button>
-                <Button type="submit" variant="primary" size="sm" className="font-bold">
-                  Save Chapter
+                <Button type="submit" variant="primary" size="sm" className="font-bold cursor-pointer">
+                  {editingChapterId ? 'Update Chapter' : 'Save Chapter'}
                 </Button>
               </div>
             </form>

@@ -15,7 +15,8 @@ import {
   TowerControl,
   Shield,
   Landmark,
-  Building
+  Building,
+  FileText
 } from 'lucide-react';
 
 interface TopicAccordionProps {
@@ -218,6 +219,12 @@ export const TopicAccordion: React.FC<TopicAccordionProps> = ({
                           <Clock className="w-3 h-3 text-espresso-400" />
                           <span>{subTopic.estimatedReadingTime}</span>
                         </span>
+                        {(subTopic.documentUrl || (subTopic.resources && subTopic.resources.length > 0)) && (
+                          <span className="text-[10px] font-bold text-copper-700 bg-copper-500/10 px-2 py-0.5 rounded border border-copper-500/25 flex items-center gap-1">
+                            <FileText className="w-3 h-3" />
+                            <span>PDF Attached</span>
+                          </span>
+                        )}
                       </div>
 
                       <h4 className="text-sm font-bold text-espresso-950 group-hover:text-copper-700 transition-colors">

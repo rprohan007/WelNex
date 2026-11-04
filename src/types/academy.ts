@@ -54,6 +54,8 @@ export interface SubTopic {
   numericalExamples?: NumericalExampleCard[];
   quizQuestions?: QuizQuestion[];
   resources?: ChapterResource[];
+  documentUrl?: string;
+  slidesUrl?: string;
 }
 
 export interface Topic {
