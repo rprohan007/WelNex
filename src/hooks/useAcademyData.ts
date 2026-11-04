@@ -17,16 +17,18 @@ export const useAcademyData = () => {
     }
   });
 
+  const { user, isSignedIn, openAuthModal } = useAuth();
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Dynamic Supabase Query on mount: hydrates from Supabase first, with robust local cache fallback
+  // Dynamic Supabase Query on mount and whenever authentication state changes:
+  // Hydrates live chapters from Supabase for all users (standard users & admins)
   const refreshAcademyData = useCallback(async () => {
     setIsLoading(true);
     try {
-      // 1. Hydrate state from Supabase first
+      // Hydrate state from Supabase first
       const liveTopics = await fetchAcademyDataFromSupabase();
       if (Array.isArray(liveTopics) && liveTopics.length > 0) {
-        setAllTopics((prev) => mergeTopicsWithLocalCache(liveTopics, prev));
+        setAllTopics(liveTopics);
       } else {
         // Fall back to cached chapters from local storage without resetting freshly created chapters
         const stored = localStorage.getItem(STORAGE_KEY_TOPICS);
@@ -43,18 +45,6 @@ export const useAcademyData = () => {
       }
     } catch (err) {
       console.warn('[useAcademyData] Error refreshing academy topics from Supabase, preserving local chapters:', err);
-      // Fallback: keep existing in-memory state and merge with cached chapters
-      const stored = localStorage.getItem(STORAGE_KEY_TOPICS);
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            setAllTopics((prev) => mergeTopicsWithLocalCache(parsed, prev));
-          }
-        } catch {
-          // ignore
-        }
-      }
     } finally {
       setIsLoading(false);
     }
@@ -62,9 +52,7 @@ export const useAcademyData = () => {
 
   useEffect(() => {
     refreshAcademyData();
-  }, [refreshAcademyData]);
-
-  const { user, isSignedIn, openAuthModal } = useAuth();
+  }, [refreshAcademyData, isSignedIn]);
 
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -126,8 +114,12 @@ export const useAcademyData = () => {
     return ['All', ...Array.from(set)];
   }, [allTopics]);
 
-  // Filtered Topics
+  // Filtered Topics - module contents are strictly gated to signed-in users
   const filteredTopics = useMemo(() => {
+    if (!isSignedIn) {
+      return [];
+    }
+
     return allTopics.filter((topic) => {
       // Category filter
       if (selectedCategory !== 'All' && topic.category !== selectedCategory) {
@@ -148,7 +140,7 @@ export const useAcademyData = () => {
 
       return true;
     });
-  }, [allTopics, selectedCategory, searchQuery]);
+  }, [allTopics, selectedCategory, searchQuery, isSignedIn]);
 
   // Topic Accordion Toggle
   const toggleTopicExpand = (id: string) => {
@@ -284,6 +276,8 @@ export const useAcademyData = () => {
     findLessonById,
     stats,
     isSignedIn,
+    isAuthenticated: isSignedIn,
+    user,
     openAuthModal
   };
 };

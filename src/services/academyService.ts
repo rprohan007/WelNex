@@ -1,7 +1,7 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
 import type { Topic, SubTopic } from '../types/academy';
 import rawAcademyData from '../data/academyData.json';
-import { saveDocumentToIndexedDB } from './indexedDbStorage';
+import { saveDocumentToIndexedDB, getDocumentFromIndexedDB } from './indexedDbStorage';
 
 const LOCAL_STORAGE_KEY = 'welnex_custom_academy_topics';
 
@@ -221,30 +221,99 @@ export async function fetchAcademyDataFromSupabase(): Promise<Topic[]> {
   }
 
   try {
-    // Hierarchical query fetching topics and chapters
-    const { data: topicsData, error: topicsError } = await supabase
-      .from('academy_topics')
-      .select('*, academy_chapters(*)')
-      .order('sort_order', { ascending: true });
+    // 1. Fetch both topics and chapters from Supabase in parallel
+    const [topicsRes, chaptersRes] = await Promise.all([
+      supabase.from('academy_topics').select('*').order('sort_order', { ascending: true }),
+      supabase.from('academy_chapters').select('*').order('sort_order', { ascending: true })
+    ]);
 
-    if (topicsError) {
-      console.warn('[academyService] Supabase topics query error, using local fallback:', topicsError.message);
+    const remoteTopics = topicsRes.data || [];
+    const remoteChapters = chaptersRes.data || [];
+
+    // If both return empty/error, safely fall back to cachedData
+    if (remoteTopics.length === 0 && remoteChapters.length === 0) {
+      if (topicsRes.error) console.warn('[academyService] Supabase topics query notice:', topicsRes.error.message);
+      if (chaptersRes.error) console.warn('[academyService] Supabase chapters query notice:', chaptersRes.error.message);
       return cachedData;
     }
 
-    if (topicsData && topicsData.length > 0) {
-      const formatted: Topic[] = topicsData.map((t) => {
-        const rawChapters = Array.isArray(t.academy_chapters) ? t.academy_chapters : [];
-        return mapDbTopicToTopic(t, rawChapters);
-      });
+    // 2. Start with baseline default seed topics from rawAcademyData merged with cachedData
+    const baselineTopics = (rawAcademyData as Topic[]).map(t => ({ ...t, subTopics: [...t.subTopics] }));
+    const topicMap = new Map<string, Topic>();
 
-      // Merge Supabase topics with local cache so custom uploaded documents/chapters are never lost
-      const merged = mergeTopicsWithLocalCache(formatted, cachedData);
-      safeSaveAcademyTopicsToLocalStorage(merged);
-      return merged;
-    }
+    // Index baseline topics
+    baselineTopics.forEach(t => topicMap.set(t.id, t));
 
-    return cachedData;
+    // Also include any local cached topics
+    cachedData.forEach(t => {
+      if (!topicMap.has(t.id)) {
+        topicMap.set(t.id, { ...t, subTopics: [...t.subTopics] });
+      }
+    });
+
+    // Merge in topics returned from Supabase academy_topics
+    remoteTopics.forEach(t => {
+      const existing = topicMap.get(t.id);
+      if (existing) {
+        existing.title = t.title || existing.title;
+        existing.slug = t.slug || existing.slug;
+        existing.category = t.category || existing.category;
+        existing.description = t.description || existing.description;
+        existing.iconName = t.icon_name || existing.iconName;
+        existing.order = Number(t.sort_order) || existing.order;
+      } else {
+        topicMap.set(t.id, {
+          id: t.id,
+          title: t.title,
+          slug: t.slug,
+          category: t.category,
+          description: t.description || '',
+          iconName: t.icon_name || 'BookOpen',
+          order: Number(t.sort_order) || 1,
+          subTopics: []
+        });
+      }
+    });
+
+    // Merge in all live chapters from Supabase academy_chapters table
+    remoteChapters.forEach(row => {
+      const mappedChapter = mapDbChapterToSubTopic(row);
+      let targetTopic = topicMap.get(mappedChapter.topicId);
+
+      // If topic doesn't exist in map, create fallback topic container
+      if (!targetTopic) {
+        targetTopic = {
+          id: mappedChapter.topicId,
+          title: 'Specialized Investment Modules',
+          slug: mappedChapter.topicId,
+          category: 'Advanced Assets',
+          description: 'Institutional modules and custom curriculum chapters.',
+          iconName: 'BookOpen',
+          order: topicMap.size + 1,
+          subTopics: []
+        };
+        topicMap.set(mappedChapter.topicId, targetTopic);
+      }
+
+      // Add or replace chapter in topic.subTopics
+      const subIdx = targetTopic.subTopics.findIndex(st => st.id === mappedChapter.id);
+      if (subIdx >= 0) {
+        targetTopic.subTopics[subIdx] = mappedChapter;
+      } else {
+        targetTopic.subTopics.push(mappedChapter);
+      }
+    });
+
+    // Sort subTopics by order in each topic
+    topicMap.forEach(t => {
+      t.subTopics.sort((a, b) => (a.order || 0) - (b.order || 0));
+    });
+
+    const finalTopics = Array.from(topicMap.values()).sort((a, b) => (a.order || 0) - (b.order || 0));
+
+    // Save to local storage safely for offline availability
+    safeSaveAcademyTopicsToLocalStorage(finalTopics);
+    return finalTopics;
   } catch (err) {
     console.error('[academyService] Network error fetching academy data:', err);
     return cachedData;
@@ -373,33 +442,67 @@ export async function upsertAcademyChapterToSupabase(
     return { success: true };
   }
 
-  // 2. Wrap Supabase update in a try-catch block and log DB schema / payload rejection errors
+  // 2. Ensure parent topic exists in Supabase academy_topics to prevent foreign key errors
   try {
-    // Sanitize payload so Supabase doesn't reject mega-byte Base64 payloads
-    const sanitizedChapter = {
+    const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+    const existing: Topic[] = raw ? JSON.parse(raw) : (rawAcademyData as Topic[]);
+    const parentTopic = existing.find(t => t.id === chapter.topicId) || (rawAcademyData as Topic[]).find(t => t.id === chapter.topicId);
+    if (parentTopic) {
+      await supabase.from('academy_topics').upsert({
+        id: parentTopic.id,
+        title: parentTopic.title,
+        slug: parentTopic.slug,
+        category: parentTopic.category,
+        description: parentTopic.description,
+        icon_name: parentTopic.iconName || 'BookOpen',
+        sort_order: parentTopic.order || 1,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'id' });
+    }
+  } catch (topicErr) {
+    console.warn('[academyService] Parent topic sync notice:', topicErr);
+  }
+
+  // 3. Save chapter directly to Supabase public academy_chapters table
+  try {
+    // Resolve binary data if stored under indexeddb references so remote DB holds the document
+    let actualDocUrl = chapter.documentUrl;
+    if (actualDocUrl?.startsWith('indexeddb://')) {
+      const docId = actualDocUrl.replace('indexeddb://', '');
+      const data = await getDocumentFromIndexedDB(docId);
+      if (data) actualDocUrl = data;
+    }
+
+    let actualSlidesUrl = chapter.slidesUrl;
+    if (actualSlidesUrl?.startsWith('indexeddb://')) {
+      const sldId = actualSlidesUrl.replace('indexeddb://', '');
+      const data = await getDocumentFromIndexedDB(sldId);
+      if (data) actualSlidesUrl = data;
+    }
+
+    const payloadChapter: SubTopic = {
       ...chapter,
-      documentUrl: chapter.documentUrl?.startsWith('data:')
-        ? `indexeddb://doc_${chapter.id}`
-        : chapter.documentUrl,
-      slidesUrl: chapter.slidesUrl?.startsWith('data:')
-        ? `indexeddb://slides_${chapter.id}`
-        : chapter.slidesUrl,
-      resources: chapter.resources?.map(r => ({
-        ...r,
-        fileUrl: r.fileUrl?.startsWith('data:')
-          ? `indexeddb://${r.id}`
-          : r.fileUrl
-      }))
+      documentUrl: actualDocUrl,
+      slidesUrl: actualSlidesUrl
     };
 
-    const row = mapSubTopicToDbChapter(sanitizedChapter);
+    const row = mapSubTopicToDbChapter(payloadChapter);
     const { error } = await supabase
       .from('academy_chapters')
       .upsert(row, { onConflict: 'id' });
 
     if (error) {
-      console.warn('[academyService] Supabase DB chapter upsert schema/payload rejection, local memory state kept intact:', error.message || error);
-      return { success: false, error: error.message };
+      console.warn('[academyService] Supabase DB chapter upsert payload notice:', error.message || error);
+      // Fallback: If payload was too large for Supabase network, upsert with compact reference
+      const fallbackRow = mapSubTopicToDbChapter({
+        ...chapter,
+        documentUrl: chapter.documentUrl?.startsWith('data:') ? `indexeddb://doc_${chapter.id}` : chapter.documentUrl,
+        slidesUrl: chapter.slidesUrl?.startsWith('data:') ? `indexeddb://slides_${chapter.id}` : chapter.slidesUrl
+      });
+      const { error: fallbackError } = await supabase.from('academy_chapters').upsert(fallbackRow, { onConflict: 'id' });
+      if (fallbackError) {
+        return { success: false, error: fallbackError.message };
+      }
     }
 
     return { success: true };
