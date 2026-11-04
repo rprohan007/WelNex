@@ -33,7 +33,6 @@ import {
 } from 'lucide-react';
 import { marketDataService } from '../../services/marketDataService';
 import rawInvestments from '../../data/investmentsData.json';
-import rawAcademyData from '../../data/academyData.json';
 import type { Topic, SubTopic, DifficultyLevel, ChapterResource } from '../../types/academy';
 import type { InvestmentItem, WaitlistLead } from '../../types';
 import {
@@ -61,8 +60,7 @@ import {
   deleteAcademyTopicFromSupabase,
   upsertAcademyChapterToSupabase,
   deleteAcademyChapterFromSupabase,
-  safeSaveAcademyTopicsToLocalStorage,
-  mergeTopicsWithLocalCache
+  safeSaveAcademyTopicsToLocalStorage
 } from '../../services/academyService';
 import { saveDocumentToIndexedDB } from '../../services/indexedDbStorage';
 import {
@@ -195,9 +193,9 @@ export const AdminCMSPortal: React.FC<AdminCMSPortalProps> = ({
   const [academyTopics, setAcademyTopics] = useState<Topic[]>(() => {
     try {
       const stored = localStorage.getItem('welnex_custom_academy_topics');
-      return stored ? JSON.parse(stored) : (rawAcademyData as unknown as Topic[]);
+      return stored ? JSON.parse(stored) : [];
     } catch {
-      return rawAcademyData as unknown as Topic[];
+      return [];
     }
   });
   const [expandedTopicId, setExpandedTopicId] = useState<string | null>(academyTopics[0]?.id || null);
@@ -254,8 +252,8 @@ export const AdminCMSPortal: React.FC<AdminCMSPortalProps> = ({
         ]);
         if (!isMounted) return;
         if (liveInvs && liveInvs.length > 0) setInvestments(liveInvs);
-        if (Array.isArray(liveTopics) && liveTopics.length > 0) {
-          setAcademyTopics(prev => mergeTopicsWithLocalCache(liveTopics, prev));
+        if (Array.isArray(liveTopics)) {
+          setAcademyTopics(liveTopics);
         }
         if (Array.isArray(liveWaitlist)) setWaitlistLeads(liveWaitlist);
         if (Array.isArray(liveInquiries)) setInquiries(liveInquiries);
@@ -781,6 +779,29 @@ export const AdminCMSPortal: React.FC<AdminCMSPortalProps> = ({
     const sldUrl = chapterSlidesUrl || chapterResources.find(r => r.fileType !== 'pdf')?.fileUrl || undefined;
     const targetChapterId = editingChapterId || `subtopic-${Date.now()}`;
 
+    // Consolidate attachments into resources array for database persistence
+    const finalResources: ChapterResource[] = [...chapterResources];
+    if (docUrl && !finalResources.some(r => r.fileUrl === docUrl)) {
+      finalResources.unshift({
+        id: `res-doc-${targetChapterId}`,
+        title: `${chapterTitle} Document`,
+        fileType: 'pdf',
+        fileUrl: docUrl,
+        fileSize: 'Curriculum PDF',
+        description: 'Official chapter PDF curriculum and technical notes.'
+      });
+    }
+    if (sldUrl && !finalResources.some(r => r.fileUrl === sldUrl)) {
+      finalResources.push({
+        id: `res-slides-${targetChapterId}`,
+        title: `${chapterTitle} Slides`,
+        fileType: 'ppt',
+        fileUrl: sldUrl,
+        fileSize: 'Slide Deck',
+        description: 'Visual slide deck and lecture materials.'
+      });
+    }
+
     const newSubTopic: SubTopic = {
       id: targetChapterId,
       topicId: activeParentTopicId,
@@ -807,7 +828,7 @@ export const AdminCMSPortal: React.FC<AdminCMSPortalProps> = ({
           explanation: chapterQuizExplanation || 'Explanation verified according to institutional SEBI rules.'
         }
       ] : undefined,
-      resources: chapterResources.length > 0 ? chapterResources : undefined,
+      resources: finalResources.length > 0 ? finalResources : undefined,
       documentUrl: docUrl,
       slidesUrl: sldUrl
     };
@@ -821,10 +842,11 @@ export const AdminCMSPortal: React.FC<AdminCMSPortalProps> = ({
 
     const updatedTopics = academyTopics.map(topic => {
       if (topic.id === activeParentTopicId) {
-        const existingIdx = topic.subTopics.findIndex(st => st.id === targetChapterId);
+        const existingSubs = Array.isArray(topic.subTopics) ? topic.subTopics : [];
+        const existingIdx = existingSubs.findIndex(st => st.id === targetChapterId);
         const updatedSubs = existingIdx >= 0
-          ? topic.subTopics.map((st, i) => (i === existingIdx ? newSubTopic : st))
-          : [...topic.subTopics, newSubTopic];
+          ? existingSubs.map((st, i) => (i === existingIdx ? newSubTopic : st))
+          : [...existingSubs, newSubTopic];
         return {
           ...topic,
           subTopics: updatedSubs

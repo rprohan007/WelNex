@@ -1,6 +1,5 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
 import type { Topic, SubTopic } from '../types/academy';
-import rawAcademyData from '../data/academyData.json';
 import { saveDocumentToIndexedDB, getDocumentFromIndexedDB } from './indexedDbStorage';
 
 const LOCAL_STORAGE_KEY = 'welnex_custom_academy_topics';
@@ -9,9 +8,13 @@ const LOCAL_STORAGE_KEY = 'welnex_custom_academy_topics';
  * Maps Supabase chapter row to SubTopic
  */
 export function mapDbChapterToSubTopic(row: any): SubTopic {
+  const resources: any[] = Array.isArray(row.resources) ? row.resources : [];
+  const pdfRes = resources.find((r: any) => r.fileType === 'pdf');
+  const slideRes = resources.find((r: any) => r.fileType !== 'pdf');
+
   return {
     id: row.id,
-    topicId: row.topic_id,
+    topicId: row.topic_id || row.topicId || '',
     title: row.title,
     slug: row.slug,
     difficulty: row.difficulty || 'Beginner',
@@ -22,9 +25,9 @@ export function mapDbChapterToSubTopic(row: any): SubTopic {
     contentSections: Array.isArray(row.content_sections) ? row.content_sections : [],
     numericalExamples: Array.isArray(row.numerical_examples) ? row.numerical_examples : undefined,
     quizQuestions: Array.isArray(row.quiz_questions) ? row.quiz_questions : undefined,
-    resources: Array.isArray(row.resources) ? row.resources : undefined,
-    documentUrl: row.document_url || row.documentUrl || undefined,
-    slidesUrl: row.slides_url || row.slidesUrl || undefined
+    resources,
+    documentUrl: row.document_url || row.documentUrl || pdfRes?.fileUrl || undefined,
+    slidesUrl: row.slides_url || row.slidesUrl || slideRes?.fileUrl || undefined
   };
 }
 
@@ -32,22 +35,42 @@ export function mapDbChapterToSubTopic(row: any): SubTopic {
  * Maps SubTopic to Supabase chapter row
  */
 export function mapSubTopicToDbChapter(chapter: SubTopic): any {
+  const resources = Array.isArray(chapter.resources) ? [...chapter.resources] : [];
+  if (chapter.documentUrl && !resources.some(r => r.fileUrl === chapter.documentUrl)) {
+    resources.unshift({
+      id: `res-doc-${chapter.id}`,
+      title: `${chapter.title} Document`,
+      fileType: 'pdf',
+      fileUrl: chapter.documentUrl,
+      fileSize: 'Curriculum PDF',
+      description: 'Official chapter PDF curriculum and technical notes.'
+    });
+  }
+  if (chapter.slidesUrl && !resources.some(r => r.fileUrl === chapter.slidesUrl)) {
+    resources.push({
+      id: `res-slides-${chapter.id}`,
+      title: `${chapter.title} Slides`,
+      fileType: 'ppt',
+      fileUrl: chapter.slidesUrl,
+      fileSize: 'Slide Deck',
+      description: 'Visual slide deck and lecture materials.'
+    });
+  }
+
   return {
     id: chapter.id,
     topic_id: chapter.topicId,
     title: chapter.title,
-    slug: chapter.slug,
-    difficulty: chapter.difficulty,
-    estimated_reading_time: chapter.estimatedReadingTime,
-    duration_minutes: chapter.durationMinutes,
-    summary: chapter.summary,
-    sort_order: chapter.order || 1,
+    slug: chapter.slug || chapter.title.toLowerCase().replace(/[^a-z0-9]/g, '-'),
+    difficulty: chapter.difficulty || 'Beginner',
+    estimated_reading_time: chapter.estimatedReadingTime || `${chapter.durationMinutes || 8} min read`,
+    duration_minutes: Number(chapter.durationMinutes) || 8,
+    summary: chapter.summary || '',
+    sort_order: Number(chapter.order) || 1,
     content_sections: chapter.contentSections || [],
     numerical_examples: chapter.numericalExamples || [],
     quiz_questions: chapter.quizQuestions || [],
-    resources: chapter.resources || [],
-    document_url: chapter.documentUrl || null,
-    slides_url: chapter.slidesUrl || null,
+    resources,
     updated_at: new Date().toISOString()
   };
 }
@@ -208,9 +231,9 @@ export async function fetchAcademyDataFromSupabase(): Promise<Topic[]> {
   const getFallback = (): Topic[] => {
     try {
       const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
-      return stored ? JSON.parse(stored) : (rawAcademyData as Topic[]);
+      return stored ? JSON.parse(stored) : [];
     } catch {
-      return rawAcademyData as Topic[];
+      return [];
     }
   };
 
@@ -230,90 +253,65 @@ export async function fetchAcademyDataFromSupabase(): Promise<Topic[]> {
     const remoteTopics = topicsRes.data || [];
     const remoteChapters = chaptersRes.data || [];
 
-    // If both return empty/error, safely fall back to cachedData
-    if (remoteTopics.length === 0 && remoteChapters.length === 0) {
-      if (topicsRes.error) console.warn('[academyService] Supabase topics query notice:', topicsRes.error.message);
-      if (chaptersRes.error) console.warn('[academyService] Supabase chapters query notice:', chaptersRes.error.message);
-      return cachedData;
-    }
+    // If Supabase returned database records, render ONLY the admin-published topics and chapters
+    if (remoteTopics.length > 0 || remoteChapters.length > 0) {
+      const topicMap = new Map<string, Topic>();
 
-    // 2. Start with baseline default seed topics from rawAcademyData merged with cachedData
-    const baselineTopics = (rawAcademyData as Topic[]).map(t => ({ ...t, subTopics: [...t.subTopics] }));
-    const topicMap = new Map<string, Topic>();
-
-    // Index baseline topics
-    baselineTopics.forEach(t => topicMap.set(t.id, t));
-
-    // Also include any local cached topics
-    cachedData.forEach(t => {
-      if (!topicMap.has(t.id)) {
-        topicMap.set(t.id, { ...t, subTopics: [...t.subTopics] });
-      }
-    });
-
-    // Merge in topics returned from Supabase academy_topics
-    remoteTopics.forEach(t => {
-      const existing = topicMap.get(t.id);
-      if (existing) {
-        existing.title = t.title || existing.title;
-        existing.slug = t.slug || existing.slug;
-        existing.category = t.category || existing.category;
-        existing.description = t.description || existing.description;
-        existing.iconName = t.icon_name || existing.iconName;
-        existing.order = Number(t.sort_order) || existing.order;
-      } else {
+      // Populate topics from Supabase
+      remoteTopics.forEach(t => {
         topicMap.set(t.id, {
           id: t.id,
           title: t.title,
-          slug: t.slug,
+          slug: t.slug || t.title.toLowerCase().replace(/[^a-z0-9]/g, '-'),
           category: t.category,
           description: t.description || '',
           iconName: t.icon_name || 'BookOpen',
           order: Number(t.sort_order) || 1,
           subTopics: []
         });
-      }
-    });
+      });
 
-    // Merge in all live chapters from Supabase academy_chapters table
-    remoteChapters.forEach(row => {
-      const mappedChapter = mapDbChapterToSubTopic(row);
-      let targetTopic = topicMap.get(mappedChapter.topicId);
+      // Populate chapters into their parent topics
+      remoteChapters.forEach(row => {
+        const mappedChapter = mapDbChapterToSubTopic(row);
+        let targetTopic = topicMap.get(mappedChapter.topicId);
 
-      // If topic doesn't exist in map, create fallback topic container
-      if (!targetTopic) {
-        targetTopic = {
-          id: mappedChapter.topicId,
-          title: 'Specialized Investment Modules',
-          slug: mappedChapter.topicId,
-          category: 'Advanced Assets',
-          description: 'Institutional modules and custom curriculum chapters.',
-          iconName: 'BookOpen',
-          order: topicMap.size + 1,
-          subTopics: []
-        };
-        topicMap.set(mappedChapter.topicId, targetTopic);
-      }
+        // If parent topic wasn't returned in remoteTopics, create its topic container
+        if (!targetTopic) {
+          targetTopic = {
+            id: mappedChapter.topicId,
+            title: mappedChapter.topicId.replace(/^topic-/, '').replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+            slug: mappedChapter.topicId,
+            category: 'Curriculum',
+            description: '',
+            iconName: 'BookOpen',
+            order: topicMap.size + 1,
+            subTopics: []
+          };
+          topicMap.set(mappedChapter.topicId, targetTopic);
+        }
 
-      // Add or replace chapter in topic.subTopics
-      const subIdx = targetTopic.subTopics.findIndex(st => st.id === mappedChapter.id);
-      if (subIdx >= 0) {
-        targetTopic.subTopics[subIdx] = mappedChapter;
-      } else {
-        targetTopic.subTopics.push(mappedChapter);
-      }
-    });
+        const existingSubs = Array.isArray(targetTopic.subTopics) ? targetTopic.subTopics : [];
+        const existingIdx = existingSubs.findIndex(st => st.id === mappedChapter.id);
+        if (existingIdx >= 0) {
+          existingSubs[existingIdx] = mappedChapter;
+        } else {
+          existingSubs.push(mappedChapter);
+        }
+        targetTopic.subTopics = existingSubs;
+      });
 
-    // Sort subTopics by order in each topic
-    topicMap.forEach(t => {
-      t.subTopics.sort((a, b) => (a.order || 0) - (b.order || 0));
-    });
+      topicMap.forEach(t => {
+        t.subTopics.sort((a, b) => (a.order || 0) - (b.order || 0));
+      });
 
-    const finalTopics = Array.from(topicMap.values()).sort((a, b) => (a.order || 0) - (b.order || 0));
+      const liveTopics = Array.from(topicMap.values()).sort((a, b) => (a.order || 0) - (b.order || 0));
+      safeSaveAcademyTopicsToLocalStorage(liveTopics);
+      return liveTopics;
+    }
 
-    // Save to local storage safely for offline availability
-    safeSaveAcademyTopicsToLocalStorage(finalTopics);
-    return finalTopics;
+    // If Supabase has 0 records, return cachedData (or empty array)
+    return cachedData;
   } catch (err) {
     console.error('[academyService] Network error fetching academy data:', err);
     return cachedData;
@@ -329,7 +327,7 @@ export async function upsertAcademyTopicToSupabase(
   // Update local cache
   try {
     const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
-    const existing: Topic[] = raw ? JSON.parse(raw) : (rawAcademyData as Topic[]);
+    const existing: Topic[] = raw ? JSON.parse(raw) : [];
     const idx = existing.findIndex((t) => t.id === topic.id);
     let updated: Topic[];
     if (idx >= 0) {
@@ -351,9 +349,9 @@ export async function upsertAcademyTopicToSupabase(
     const row = {
       id: topic.id,
       title: topic.title,
-      slug: topic.slug,
+      slug: topic.slug || topic.title.toLowerCase().replace(/[^a-z0-9]/g, '-'),
       category: topic.category,
-      description: topic.description,
+      description: topic.description || '',
       icon_name: topic.iconName || 'BookOpen',
       sort_order: topic.order || 1,
       updated_at: new Date().toISOString()
@@ -422,13 +420,14 @@ export async function upsertAcademyChapterToSupabase(
   // 1. Sync to local cache immediately with safe quota protection
   try {
     const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
-    const existing: Topic[] = raw ? JSON.parse(raw) : (rawAcademyData as Topic[]);
+    const existing: Topic[] = raw ? JSON.parse(raw) : [];
     const updated = existing.map((t) => {
       if (t.id === chapter.topicId) {
-        const cIndex = t.subTopics.findIndex((st) => st.id === chapter.id);
+        const existingSubs = Array.isArray(t.subTopics) ? t.subTopics : [];
+        const cIndex = existingSubs.findIndex((st) => st.id === chapter.id);
         const newSubs = cIndex >= 0
-          ? t.subTopics.map((st, i) => (i === cIndex ? chapter : st))
-          : [...t.subTopics, chapter];
+          ? existingSubs.map((st, i) => (i === cIndex ? chapter : st))
+          : [...existingSubs, chapter];
         return { ...t, subTopics: newSubs };
       }
       return t;
@@ -445,15 +444,15 @@ export async function upsertAcademyChapterToSupabase(
   // 2. Ensure parent topic exists in Supabase academy_topics to prevent foreign key errors
   try {
     const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
-    const existing: Topic[] = raw ? JSON.parse(raw) : (rawAcademyData as Topic[]);
-    const parentTopic = existing.find(t => t.id === chapter.topicId) || (rawAcademyData as Topic[]).find(t => t.id === chapter.topicId);
+    const existing: Topic[] = raw ? JSON.parse(raw) : [];
+    const parentTopic = existing.find(t => t.id === chapter.topicId);
     if (parentTopic) {
       await supabase.from('academy_topics').upsert({
         id: parentTopic.id,
         title: parentTopic.title,
-        slug: parentTopic.slug,
-        category: parentTopic.category,
-        description: parentTopic.description,
+        slug: parentTopic.slug || parentTopic.title.toLowerCase().replace(/[^a-z0-9]/g, '-'),
+        category: parentTopic.category || 'Curriculum',
+        description: parentTopic.description || '',
         icon_name: parentTopic.iconName || 'BookOpen',
         sort_order: parentTopic.order || 1,
         updated_at: new Date().toISOString()
@@ -493,16 +492,7 @@ export async function upsertAcademyChapterToSupabase(
 
     if (error) {
       console.warn('[academyService] Supabase DB chapter upsert payload notice:', error.message || error);
-      // Fallback: If payload was too large for Supabase network, upsert with compact reference
-      const fallbackRow = mapSubTopicToDbChapter({
-        ...chapter,
-        documentUrl: chapter.documentUrl?.startsWith('data:') ? `indexeddb://doc_${chapter.id}` : chapter.documentUrl,
-        slidesUrl: chapter.slidesUrl?.startsWith('data:') ? `indexeddb://slides_${chapter.id}` : chapter.slidesUrl
-      });
-      const { error: fallbackError } = await supabase.from('academy_chapters').upsert(fallbackRow, { onConflict: 'id' });
-      if (fallbackError) {
-        return { success: false, error: fallbackError.message };
-      }
+      return { success: false, error: error.message };
     }
 
     return { success: true };

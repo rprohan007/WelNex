@@ -1,19 +1,18 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import type { Topic, SubTopic, LessonStatus, AcademyStats } from '../types/academy';
-import rawAcademyData from '../data/academyData.json';
-import { fetchAcademyDataFromSupabase, mergeTopicsWithLocalCache } from '../services/academyService';
+import { fetchAcademyDataFromSupabase } from '../services/academyService';
 import { useAuth } from '../context/AuthContext';
 
 const STORAGE_KEY_TOPICS = 'welnex_custom_academy_topics';
 
 export const useAcademyData = () => {
-  // Initial cached / raw topics for immediate display
+  // Initial cached topics for immediate display (empty array if no topics published)
   const [allTopics, setAllTopics] = useState<Topic[]>(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY_TOPICS);
-      return stored ? JSON.parse(stored) : (rawAcademyData as Topic[]);
+      return stored ? JSON.parse(stored) : [];
     } catch {
-      return rawAcademyData as Topic[];
+      return [];
     }
   });
 
@@ -25,26 +24,13 @@ export const useAcademyData = () => {
   const refreshAcademyData = useCallback(async () => {
     setIsLoading(true);
     try {
-      // Hydrate state from Supabase first
+      // Hydrate state from Supabase
       const liveTopics = await fetchAcademyDataFromSupabase();
-      if (Array.isArray(liveTopics) && liveTopics.length > 0) {
+      if (Array.isArray(liveTopics)) {
         setAllTopics(liveTopics);
-      } else {
-        // Fall back to cached chapters from local storage without resetting freshly created chapters
-        const stored = localStorage.getItem(STORAGE_KEY_TOPICS);
-        if (stored) {
-          try {
-            const parsed = JSON.parse(stored);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-              setAllTopics((prev) => mergeTopicsWithLocalCache(parsed, prev));
-            }
-          } catch {
-            // ignore
-          }
-        }
       }
     } catch (err) {
-      console.warn('[useAcademyData] Error refreshing academy topics from Supabase, preserving local chapters:', err);
+      console.warn('[useAcademyData] Error refreshing academy topics from Supabase:', err);
     } finally {
       setIsLoading(false);
     }
@@ -56,8 +42,14 @@ export const useAcademyData = () => {
 
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [expandedTopicIds, setExpandedTopicIds] = useState<string[]>([allTopics[0]?.id || 'topic-foundations']);
+  const [expandedTopicIds, setExpandedTopicIds] = useState<string[]>(allTopics[0]?.id ? [allTopics[0].id] : []);
   const [selectedLesson, setSelectedLesson] = useState<SubTopic | null>(null);
+
+  useEffect(() => {
+    if (allTopics.length > 0 && expandedTopicIds.length === 0) {
+      setExpandedTopicIds([allTopics[0].id]);
+    }
+  }, [allTopics]);
 
   // Storage key uniquely scoped per user identity
   const userStorageKey = useMemo(() => {
@@ -229,9 +221,12 @@ export const useAcademyData = () => {
     let completedMinutes = 0;
 
     allSubTopics.forEach((st) => {
-      totalMinutes += st.durationMinutes;
+      const dur = typeof st.durationMinutes === 'number' && !isNaN(st.durationMinutes)
+        ? st.durationMinutes
+        : parseInt(String((st as any).duration || (st as any).durationMinutes || st.estimatedReadingTime || 0)) || 0;
+      totalMinutes += dur;
       if (completedLessonIds.includes(st.id)) {
-        completedMinutes += st.durationMinutes;
+        completedMinutes += dur;
       }
     });
 

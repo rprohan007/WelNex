@@ -29,6 +29,7 @@ export const AcademyFramework: React.FC<AcademyFrameworkProps> = ({
   isStandalonePage = false
 }) => {
   const {
+    topics,
     filteredTopics,
     categories,
     selectedCategory,
@@ -49,6 +50,18 @@ export const AcademyFramework: React.FC<AcademyFrameworkProps> = ({
     isSignedIn,
     openAuthModal
   } = useAcademyData();
+
+  // Dynamically compute syllabus metrics from live topics state
+  const totalTopics = topics.length;
+  const totalChapters = topics.reduce((sum, t) => sum + (t.subTopics?.length || 0), 0);
+  const totalMins = topics.reduce((sum, t) => 
+    sum + (t.subTopics?.reduce((subSum, st) => {
+      const dur = typeof st.durationMinutes === 'number' && !isNaN(st.durationMinutes)
+        ? st.durationMinutes
+        : parseInt(String((st as any).duration || (st as any).durationMinutes || st.estimatedReadingTime || 0)) || 0;
+      return subSum + dur;
+    }, 0) || 0), 0
+  );
 
   const isModalOpen = selectedLesson !== null;
 
@@ -103,7 +116,7 @@ export const AcademyFramework: React.FC<AcademyFrameworkProps> = ({
                 Total Syllabus Scope
               </span>
               <span className="font-mono font-bold text-base text-espresso-950 truncate block">
-                {stats.totalTopics} Topics • {stats.totalSubTopics} Chapters
+                {totalTopics} Topics • {totalChapters} Chapters
               </span>
             </div>
           </div>
@@ -118,7 +131,7 @@ export const AcademyFramework: React.FC<AcademyFrameworkProps> = ({
                 Estimated Reading Time
               </span>
               <span className="font-mono font-bold text-base text-espresso-950 truncate block">
-                {isSignedIn ? `${stats.remainingMinutes} Mins Remaining` : `${stats.totalEstimatedMinutes} Mins Total`}
+                {isSignedIn ? `${stats.remainingMinutes} Mins Remaining` : `${totalMins} Mins Total`}
               </span>
             </div>
           </div>
@@ -135,7 +148,7 @@ export const AcademyFramework: React.FC<AcademyFrameworkProps> = ({
                     Your Progress
                   </span>
                   <span className="font-mono font-bold text-base text-emerald-800 truncate block">
-                    {stats.completedSubTopics}/{stats.totalSubTopics} Done ({stats.progressPercentage}%)
+                    {stats.completedSubTopics}/{totalChapters} Done ({stats.progressPercentage}%)
                   </span>
                 </div>
               </div>
@@ -219,7 +232,7 @@ export const AcademyFramework: React.FC<AcademyFrameworkProps> = ({
               <div className="p-3.5 rounded-xl bg-sand-100/70 border border-champagne-500/30 flex items-start gap-2.5">
                 <BookOpen className="w-4 h-4 text-copper-600 shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-xs font-bold text-espresso-900">Comprehensive Syllabus</p>
+                  <p className="text-xs font-bold text-espresso-900">{totalTopics} Topics • {totalChapters} Chapters</p>
                   <p className="text-[11px] text-espresso-600 leading-tight mt-0.5">Commercial REITs, InvITs & debt frameworks</p>
                 </div>
               </div>
