@@ -102,3 +102,4 @@ export async function deleteDocumentFromIndexedDB(id: string): Promise<void> {
     // ignore
   }
 }
+
