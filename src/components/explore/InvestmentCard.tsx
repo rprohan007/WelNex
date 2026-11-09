@@ -3,6 +3,7 @@ import { GlassCard } from '../common/GlassCard';
 import { Button } from '../common/Button';
 import type { InvestmentItem } from '../../types';
 import { useAssetLivePrice } from '../../hooks/useMarketData';
+import { isNseListedAsset } from '../../services/marketPriceService';
 import { 
   Building2, 
   TowerControl, 
@@ -22,7 +23,7 @@ import {
   Calendar
 } from 'lucide-react';
 
-interface InvestmentCardProps {
+export interface InvestmentCardProps {
   investment: InvestmentItem;
   onViewDetails: (id: string) => void;
   onToggleCompare: (id: string) => void;
@@ -36,6 +37,7 @@ export const InvestmentCard: React.FC<InvestmentCardProps> = ({
   isComparing
 }) => {
   const priceData = useAssetLivePrice(investment);
+  const isNseLive = isNseListedAsset(investment) && (investment.isNseLive ?? priceData.isLiveMode);
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
@@ -74,6 +76,14 @@ export const InvestmentCard: React.FC<InvestmentCardProps> = ({
     }
   };
 
+  const displayPriceText = isNseLive
+    ? investment.liveNsePriceFormatted || priceData.displayPrice
+    : priceData.displayPrice;
+
+  const livePriceString = isNseLive
+    ? investment.nseLivePriceString || `${displayPriceText} / unit (NSE Live)`
+    : investment.minInvestment;
+
   return (
     <GlassCard
       variant="interactive"
@@ -97,9 +107,9 @@ export const InvestmentCard: React.FC<InvestmentCardProps> = ({
           </div>
 
           {/* DUAL-MODE PRICING BADGE */}
-          {priceData.isLiveMode ? (
+          {isNseLive ? (
             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black tracking-wider text-emerald-800 bg-emerald-500/15 border border-emerald-500/30 shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-beacon" />
+              <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
               LIVE • NSE
             </span>
           ) : (
@@ -138,26 +148,36 @@ export const InvestmentCard: React.FC<InvestmentCardProps> = ({
 
         {/* DYNAMIC ASSET PRICE ENGINE BOX */}
         <div className={`p-3 rounded-2xl border mb-3.5 transition-all duration-300 ${
-          priceData.isLiveMode 
+          isNseLive 
             ? 'bg-gradient-to-r from-emerald-500/5 via-sand-100 to-copper-500/5 border-emerald-500/25' 
             : 'bg-sand-100/90 border-champagne-500/35'
         }`}>
           <div className="flex items-center justify-between gap-2">
             <div>
-              <span className="text-[9.5px] uppercase font-bold text-espresso-500 tracking-wider block">
-                {priceData.isLiveMode ? 'Live Trading Price (Per Unit)' : 'Assessed NAV / Base Unit'}
-              </span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[9.5px] uppercase font-bold text-espresso-500 tracking-wider block">
+                  {isNseLive ? 'Live Trading Price' : 'Assessed NAV / Base Unit'}
+                </span>
+                {/* Live NSE Tick badge with green dot */}
+                {isNseLive && (
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded-full text-[9px] font-extrabold bg-emerald-500/15 border border-emerald-500/30 text-emerald-800">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    Live NSE Tick
+                  </span>
+                )}
+              </div>
+              
               <div className="flex items-baseline gap-2 mt-0.5">
                 <span className={`text-base sm:text-lg font-mono font-black price-tick-transition ${
                   priceData.isPulsing 
                     ? priceData.isPositive ? 'text-emerald-700' : 'text-rose-700'
                     : 'text-espresso-950'
                 }`}>
-                  {priceData.displayPrice}
+                  {displayPriceText}
                 </span>
 
-                {/* 24h Shift for Listed vs Educational Note for Periodic */}
-                {priceData.isLiveMode && (
+                {/* 24h Shift for Listed Assets */}
+                {isNseLive && (
                   <span className={`inline-flex items-center gap-0.5 text-xs font-mono font-bold price-tick-transition ${
                     priceData.isPositive ? 'text-emerald-700' : 'text-rose-700'
                   }`}>
@@ -166,14 +186,27 @@ export const InvestmentCard: React.FC<InvestmentCardProps> = ({
                   </span>
                 )}
               </div>
+
+              {/* Live price string preview */}
+              {isNseLive && (
+                <div className="flex items-center gap-1 mt-0.5 text-[10px] font-mono text-emerald-800 font-semibold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  <span>{livePriceString}</span>
+                </div>
+              )}
             </div>
 
             {/* Right Sub-text / Valuation Label */}
             <div className="text-right shrink-0">
-              {priceData.isLiveMode ? (
-                <span className="text-[9px] font-mono text-espresso-500 block">
-                  {priceData.lastUpdatedText}
-                </span>
+              {isNseLive ? (
+                <div className="text-right">
+                  <span className="text-[9px] font-mono text-espresso-500 block">
+                    {priceData.lastUpdatedText}
+                  </span>
+                  <span className="text-[9px] font-mono text-emerald-700 font-bold block">
+                    NSE: {investment.symbolTicker || investment.symbol || 'LIVE'}
+                  </span>
+                </div>
               ) : (
                 <div className="text-right">
                   <span className="text-[9.5px] font-bold text-copper-700 block">
@@ -205,17 +238,30 @@ export const InvestmentCard: React.FC<InvestmentCardProps> = ({
             </span>
           </div>
 
-          {/* Min Investment */}
+          {/* Min Investment (Live Price for Listed, or Admin CMS ticket for Private Fractional CRE) */}
           <div>
             <span className="text-[10px] uppercase font-bold text-espresso-600 flex items-center gap-1">
               <Coins className="w-3 h-3 text-espresso-500" />
               <span>Min. Investment</span>
             </span>
-            <div className="text-sm sm:text-base font-mono font-bold text-espresso-950 mt-0.5 truncate">
-              {investment.minInvestment}
+            <div className="text-sm sm:text-base font-mono font-bold text-espresso-950 mt-0.5 truncate flex items-center gap-1.5">
+              {isNseLive ? (
+                <>
+                  <span>{displayPriceText}</span>
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-emerald-500/15 text-emerald-800 border border-emerald-500/25">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    Live
+                  </span>
+                </>
+              ) : (
+                /* Admin Override Fallback: Preserves Admin CMS edited minimum ticket price */
+                <span>{investment.minInvestment}</span>
+              )}
             </div>
             <span className="text-[9px] text-espresso-500 block truncate">
-              {investment.accessModel === 'Direct Public' ? '1 Unit Exchange Lot' : 'Curated Partner Access'}
+              {isNseLive 
+                ? '1 Unit on NSE/BSE' 
+                : (investment.accessModel === 'Direct Public' ? '1 Unit Exchange Lot' : 'Curated Partner Access')}
             </span>
           </div>
 
@@ -294,3 +340,5 @@ export const InvestmentCard: React.FC<InvestmentCardProps> = ({
     </GlassCard>
   );
 };
+
+export default InvestmentCard;

@@ -9,7 +9,7 @@ import { Badge } from '../common/Badge';
 import { Button } from '../common/Button';
 import { Scale, X, ArrowRight, RotateCcw, Compass, Calculator, Radio, Zap, RefreshCw, Clock } from 'lucide-react';
 
-interface ExploreCatalogueProps {
+export interface ExploreCatalogueProps {
   onSelectInvestment: (id: string) => void;
   onOpenWaitlist?: () => void;
   onBackToHome?: () => void;

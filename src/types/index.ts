@@ -139,6 +139,11 @@ export interface InvestmentItem {
   symbolTicker?: string; // NSE/BSE ticker symbol (e.g., "EMBASSY", "INDIGRID", "GOLDBEES")
   priceMode?: PriceMode; // "LIVE_MARKET" vs "PERIODIC_NAV"
   currentPrice?: number; // Numeric price in ₹
+  liveNsePrice?: number; // Live tick price from NSE
+  liveNsePriceFormatted?: string; // e.g. "₹419.50"
+  isNseLive?: boolean; // Whether live NSE data successfully hydrated
+  nseLivePriceString?: string; // e.g. "₹419.50 / unit (NSE Live)"
+  isin?: string; // ISIN code (e.g. "INE041025011")
   priceChange24h?: number; // Numeric shift in ₹
   priceChangePercent24h?: number; // Numeric % shift
   lastPriceUpdate?: string; // Timestamp
