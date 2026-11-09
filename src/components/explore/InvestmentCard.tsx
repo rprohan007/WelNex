@@ -156,7 +156,7 @@ export const InvestmentCard: React.FC<InvestmentCardProps> = ({
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="text-[9.5px] uppercase font-bold text-espresso-500 tracking-wider block">
-                  {isNseLive ? 'Live Trading Price' : 'Assessed NAV / Base Unit'}
+                  {isNseLive ? 'Current Price' : 'Assessed NAV / Base Unit'}
                 </span>
                 {/* Live NSE Tick badge with green dot */}
                 {isNseLive && (
@@ -178,11 +178,11 @@ export const InvestmentCard: React.FC<InvestmentCardProps> = ({
 
                 {/* 24h Shift for Listed Assets */}
                 {isNseLive && (
-                  <span className={`inline-flex items-center gap-0.5 text-xs font-mono font-bold price-tick-transition ${
+                  <span className={`inline-flex items-center gap-1 text-xs font-mono font-bold price-tick-transition ${
                     priceData.isPositive ? 'text-emerald-700' : 'text-rose-700'
                   }`}>
                     {priceData.isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                    <span>{priceData.change24h} ({priceData.changePercent24h})</span>
+                    <span>Day Change: {priceData.change24h} ({priceData.changePercent24h})</span>
                   </span>
                 )}
               </div>

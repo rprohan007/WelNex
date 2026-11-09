@@ -221,7 +221,7 @@ export const InvestmentDetailPage: React.FC<InvestmentDetailPageProps> = ({
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] uppercase font-bold tracking-wider text-espresso-600">
-                      {isNseLive ? 'Live NSE Market Price' : 'Assessed NAV Valuation'}
+                      {isNseLive ? 'Current Price' : 'Assessed NAV Valuation'}
                     </span>
                     {isNseLive ? (
                       <span className="inline-flex items-center gap-1 text-[9.5px] font-mono text-emerald-800 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded font-extrabold">
@@ -250,8 +250,7 @@ export const InvestmentDetailPage: React.FC<InvestmentDetailPageProps> = ({
                         priceData.isPositive ? 'text-emerald-700' : 'text-rose-700'
                       }`}>
                         {priceData.isPositive ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                        <span>{priceData.change24h}</span>
-                        <span>({priceData.changePercent24h})</span>
+                        <span>Day Change: {priceData.change24h} ({priceData.changePercent24h})</span>
                       </div>
                     )}
 

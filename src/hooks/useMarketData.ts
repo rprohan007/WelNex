@@ -97,21 +97,33 @@ export function useAssetLivePrice(item?: InvestmentItem | null) {
     const liveQuote = symbolKey ? getQuote(symbolKey) : undefined;
 
     if (isLiveMode) {
-      const price = liveQuote?.price ?? (item.currentPrice || item.minInvestmentNumeric || 0);
-      const change = liveQuote?.priceChange24h ?? (item.priceChange24h ?? 0);
-      const changePct = liveQuote?.priceChangePercent24h ?? (item.priceChangePercent24h ?? 0);
+      // Prioritize liveNsePrice from marketPriceService, then item.currentPrice from Admin CMS, then liveQuote
+      const price = (typeof item.liveNsePrice === 'number' && item.liveNsePrice > 0)
+        ? item.liveNsePrice
+        : (typeof item.currentPrice === 'number' && item.currentPrice > 0)
+          ? item.currentPrice
+          : (liveQuote?.price ?? (item.minInvestmentNumeric || 0));
+
+      const change = typeof item.priceChange24h === 'number'
+        ? item.priceChange24h
+        : (liveQuote?.priceChange24h ?? 0);
+
+      const changePct = typeof item.priceChangePercent24h === 'number'
+        ? item.priceChangePercent24h
+        : (liveQuote?.priceChangePercent24h ?? 0);
+
       const isPositive = change >= 0;
 
       const formatPrice = (val: number) => {
         return new Intl.NumberFormat('en-IN', {
           style: 'currency',
           currency: 'INR',
-          maximumFractionDigits: 2
+          minimumFractionDigits: 2
         }).format(val);
       };
 
       const sign = isPositive ? '+' : '';
-      const changeText = `${sign}₹${Math.abs(change).toFixed(2)}`;
+      const changeText = `${sign}${change.toFixed(2)}`;
       const changePctText = `${sign}${changePct.toFixed(2)}%`;
 
       const lastUpdatedDate = liveQuote?.lastUpdated ? new Date(liveQuote.lastUpdated) : new Date();
