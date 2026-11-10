@@ -129,7 +129,7 @@ export const AssetCard: React.FC<AssetCardProps> = ({
           {isNseLive ? (
             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black tracking-wider text-emerald-800 bg-emerald-500/15 border border-emerald-500/30 shrink-0">
               <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
-              LIVE NSE • {timestampIst}
+              ● Live NSE • {timestampIst}
             </span>
           ) : (
             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold text-copper-800 bg-champagne-500/20 border border-champagne-500/40 shrink-0">
@@ -181,7 +181,7 @@ export const AssetCard: React.FC<AssetCardProps> = ({
                 {isNseLive && (
                   <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded-full text-[9px] font-mono font-bold bg-emerald-500/15 border border-emerald-500/30 text-emerald-800">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    Live Market • {timestampIst}
+                    ● Live NSE • {timestampIst}
                   </span>
                 )}
               </div>

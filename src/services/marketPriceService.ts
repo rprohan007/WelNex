@@ -28,14 +28,14 @@ export interface NseLivePrice {
   dayLow?: number;
   volume?: number;
   lastUpdated: string;
-  timestampIst: string; // e.g. "03:30:00 PM IST"
+  timestampIst: string; // e.g. "10:08:30 AM IST"
   isLive: boolean;
   source: 'YAHOO_LIVE' | 'ADMIN_CMS' | 'SUPABASE_CACHE' | 'SIMULATED_TICK' | 'FALLBACK';
 }
 
 /**
- * Known Registry of NSE-Listed REITs, InvITs, SM REITs, ETFs and Bonds
- * Used as calibrated baselines, but the service accepts ANY ticker dynamically!
+ * Standardized baseline registry for NSE REITs, InvITs, and listed alternatives.
+ * Calibrated with exact market values (e.g. Embassy ~₹420.00, Mindspace ~₹499.37, Brookfield ~₹318.30).
  */
 export const NSE_TICKER_REGISTRY: Record<string, NseTickerMapping> = {
   'EMBASSY': {
@@ -55,8 +55,8 @@ export const NSE_TICKER_REGISTRY: Record<string, NseTickerMapping> = {
     assetId: 'mindspace-business-parks-reit',
     name: 'Mindspace Business Parks REIT',
     category: 'REIT',
-    defaultBasePrice: 358.50,
-    previousClose: 357.20
+    defaultBasePrice: 499.37,
+    previousClose: 497.10
   },
   'BIRET': {
     symbolTicker: 'BIRET',
@@ -65,8 +65,8 @@ export const NSE_TICKER_REGISTRY: Record<string, NseTickerMapping> = {
     assetId: 'brookfield-india-reit',
     name: 'Brookfield India Real Estate Trust',
     category: 'REIT',
-    defaultBasePrice: 274.50,
-    previousClose: 272.80
+    defaultBasePrice: 318.30,
+    previousClose: 316.50
   },
   'NXST': {
     symbolTicker: 'NXST',
@@ -130,7 +130,7 @@ export const NSE_TICKER_REGISTRY: Record<string, NseTickerMapping> = {
   }
 };
 
-const PRICE_CACHE_KEY = 'welnex_universal_market_prices_v3';
+const PRICE_CACHE_KEY = 'welnex_universal_market_prices_v4';
 
 /**
  * Format currency in Indian Rupees format (₹420.00)
@@ -192,7 +192,7 @@ export function resolveDynamicTicker(assetOrId: InvestmentItem | string): NseTic
     }
   }
 
-  // 1. Check known registry
+  // 1. Check calibrated registry
   if (searchKey && NSE_TICKER_REGISTRY[searchKey]) {
     return NSE_TICKER_REGISTRY[searchKey];
   }
@@ -207,7 +207,7 @@ export function resolveDynamicTicker(assetOrId: InvestmentItem | string): NseTic
 
   if (matched) return matched;
 
-  // 2. Dynamic generation for ANY listed asset ticker or symbol
+  // 2. Dynamic resolution for ANY new ticker or symbol added by Admin
   const cleanTicker = searchKey || 'ASSET';
   return {
     symbolTicker: cleanTicker,
@@ -219,9 +219,6 @@ export function resolveDynamicTicker(assetOrId: InvestmentItem | string): NseTic
   };
 }
 
-/**
- * Backwards compatibility export
- */
 export const resolveNseTicker = resolveDynamicTicker;
 
 /**
@@ -246,10 +243,8 @@ export function isNseListedAsset(item?: InvestmentItem | null): boolean {
   if (category.includes('unlisted') || subCategory.includes('unlisted')) return false;
   if (category.includes('p2p') || subCategory.includes('p2p')) return false;
 
-  // Explicit live market mode
   if (item.priceMode === 'LIVE_MARKET') return true;
 
-  // Listed categories: REITs, SM REITs, InvITs, ETFs, Bonds, Sovereign Gold
   const isListedCategory = 
     category.includes('reit') || 
     category.includes('invit') || 
@@ -261,8 +256,6 @@ export function isNseListedAsset(item?: InvestmentItem | null): boolean {
     subCategory.includes('invit');
 
   if (isListedCategory && item.accessModel === 'Direct Public') return true;
-
-  // Any asset with an exchange ticker not in unlisted category
   if (item.symbolTicker && item.accessModel === 'Direct Public') return true;
 
   return false;
@@ -420,10 +413,141 @@ class MarketPriceService {
   }
 
   /**
-   * Universal Dynamic Multi-Ticker Fetcher:
-   * Accepts ANY asset ticker or symbol dynamically and fetches live quotes using CORS-compliant proxy endpoints.
-   * Extracts regularMarketPrice, chartPreviousClose, regularMarketChange, and regularMarketChangePercent.
-   * If error or timeout occurs, falls back cleanly to Admin CMS configured price.
+   * Universal Dedicated Financial Market API Function:
+   * Passes all asset symbols with .NS suffix in a single batch call or concurrent queue.
+   * Extracts regularMarketPrice, regularMarketChange, and regularMarketChangePercent for every queried symbol.
+   */
+  public async fetchLivePricesForAssets(symbols: string[]): Promise<Record<string, NseLivePrice>> {
+    if (!Array.isArray(symbols) || symbols.length === 0) {
+      return this.priceCache;
+    }
+
+    // 1. Normalize all symbols to ensure uppercase and .NS suffix
+    const cleanToNsMap: Record<string, string> = {};
+    const nsSymbols: string[] = [];
+
+    symbols.forEach((sym) => {
+      const clean = sym.toUpperCase().replace(/\.NS$/, '').replace(/\.BO$/, '').trim();
+      if (!clean) return;
+      const nsSym = `${clean}.NS`;
+      cleanToNsMap[clean] = nsSym;
+      cleanToNsMap[nsSym] = clean;
+      if (!nsSymbols.includes(nsSym)) {
+        nsSymbols.push(nsSym);
+      }
+    });
+
+    if (nsSymbols.length === 0) {
+      return this.priceCache;
+    }
+
+    const symbolsParam = nsSymbols.join(',');
+    let batchSuccess = false;
+
+    // 2. Standardized Financial Market Batch API endpoints
+    const batchEndpoints: { url: string; headers?: Record<string, string> }[] = [
+      // Standard v7 quote batch query
+      { url: `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(symbolsParam)}` },
+      // Local serverless/Vite proxy
+      { url: `/api/yahoo-finance/v7/finance/quote?symbols=${encodeURIComponent(symbolsParam)}` },
+      // RapidAPI endpoint if key is present
+      ...(typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_RAPIDAPI_KEY ? [
+        {
+          url: `https://yahoo-finance15.p.rapidapi.com/api/v1/markets/stock/quotes?ticker=${encodeURIComponent(symbolsParam)}`,
+          headers: {
+            'X-RapidAPI-Key': (import.meta as any).env.VITE_RAPIDAPI_KEY,
+            'X-RapidAPI-Host': 'yahoo-finance15.p.rapidapi.com'
+          }
+        }
+      ] : []),
+      // Public CORS proxies for environments blocking cross-origin requests
+      { url: `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbolsParam}`)}` },
+      { url: `https://corsproxy.io/?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbolsParam}`)}` }
+    ];
+
+    for (const ep of batchEndpoints) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 4000);
+        const res = await fetch(ep.url, {
+          signal: controller.signal,
+          headers: ep.headers
+        });
+        clearTimeout(timeoutId);
+
+        if (res && res.ok) {
+          const json = await res.json();
+          // Extract quotes array from v7 quote response or RapidAPI body
+          const quotesList = json?.quoteResponse?.result || json?.body || json?.quotes || [];
+          if (Array.isArray(quotesList) && quotesList.length > 0) {
+            quotesList.forEach((q: any) => {
+              const returnedSym = (q.symbol || q.ticker || '').toUpperCase();
+              const cleanTicker = returnedSym.replace(/\.NS$/, '').replace(/\.BO$/, '').trim();
+              const cfg = resolveDynamicTicker(cleanTicker);
+
+              if (typeof q.regularMarketPrice === 'number') {
+                const regularMarketPrice = Number(q.regularMarketPrice.toFixed(2));
+                const chartPreviousClose = Number((q.regularMarketPreviousClose || q.previousClose || cfg.previousClose || regularMarketPrice).toFixed(2));
+                const regularMarketChange = typeof q.regularMarketChange === 'number'
+                  ? Number(q.regularMarketChange.toFixed(2))
+                  : Number((regularMarketPrice - chartPreviousClose).toFixed(2));
+                const regularMarketChangePercent = typeof q.regularMarketChangePercent === 'number'
+                  ? Number(q.regularMarketChangePercent.toFixed(2))
+                  : (chartPreviousClose !== 0 ? Number(((regularMarketChange / chartPreviousClose) * 100).toFixed(2)) : 0);
+
+                const isPositive = regularMarketChange >= 0;
+                const sign = isPositive ? '+' : '';
+                const marketTime = q.regularMarketTime ? new Date(q.regularMarketTime * 1000) : new Date();
+
+                const liveData: NseLivePrice = {
+                  symbolTicker: cleanTicker,
+                  yahooSymbol: `${cleanTicker}.NS`,
+                  price: regularMarketPrice,
+                  priceFormatted: formatInrCurrency(regularMarketPrice),
+                  liveString: `${formatInrCurrency(regularMarketPrice)} / unit (NSE Live)`,
+                  change24h: regularMarketChange,
+                  changePercent24h: regularMarketChangePercent,
+                  changeFormatted: `${sign}${regularMarketChange.toFixed(2)}`,
+                  changePercentFormatted: `${sign}${regularMarketChangePercent.toFixed(2)}%`,
+                  dayChangeFormatted: `${sign}${regularMarketChange.toFixed(2)} (${sign}${regularMarketChangePercent.toFixed(2)}%)`,
+                  isPositive,
+                  dayHigh: Number((q.regularMarketDayHigh || q.dayHigh || regularMarketPrice * 1.01).toFixed(2)),
+                  dayLow: Number((q.regularMarketDayLow || q.dayLow || regularMarketPrice * 0.99).toFixed(2)),
+                  volume: q.regularMarketVolume || q.volume,
+                  lastUpdated: marketTime.toISOString(),
+                  timestampIst: formatIstTimestamp(marketTime),
+                  isLive: true,
+                  source: 'YAHOO_LIVE'
+                };
+
+                this.priceCache[cleanTicker] = liveData;
+              }
+            });
+
+            batchSuccess = true;
+            this.persistCache();
+            this.notifySubscribers();
+            break;
+          }
+        }
+      } catch {
+        continue;
+      }
+    }
+
+    // 3. Concurrent Queue Fallback:
+    // If the batch endpoint didn't succeed or was rate limited, execute concurrent fetches
+    if (!batchSuccess) {
+      await Promise.allSettled(
+        symbols.map((sym) => this.fetchLivePrice(sym))
+      );
+    }
+
+    return this.priceCache;
+  }
+
+  /**
+   * Fetches real live quote for a single asset or ticker using CORS proxies.
    */
   public async fetchLivePrice(assetOrId: InvestmentItem | string): Promise<NseLivePrice | undefined> {
     const cfg = resolveDynamicTicker(assetOrId);
@@ -432,7 +556,6 @@ class MarketPriceService {
     const symbol = cfg.symbolTicker;
     const targetSymbol = cfg.yahooSymbol || `${symbol}.NS`;
 
-    // Dynamic fetch requests across multiple CORS-compliant proxy channels
     const candidateUrls = [
       `https://query1.finance.yahoo.com/v8/finance/chart/${targetSymbol}`,
       `/api/yahoo-finance/v8/finance/chart/${targetSymbol}`,
@@ -459,7 +582,6 @@ class MarketPriceService {
               (meta.chartPreviousClose || meta.previousClose || cfg.previousClose || regularMarketPrice).toFixed(2)
             );
 
-            // Extract regularMarketChange and regularMarketChangePercent
             const regularMarketChange = typeof meta.regularMarketChange === 'number'
               ? Number(meta.regularMarketChange.toFixed(2))
               : Number((regularMarketPrice - chartPreviousClose).toFixed(2));
@@ -506,9 +628,9 @@ class MarketPriceService {
       }
     }
 
-    // Reliable Admin Fallback:
+    // Graceful Fallback Handling:
     // If a symbol query encounters an error or timeout, fall back cleanly to the custom price
-    // configured in the Admin CMS Portal instead of failing or displaying hardcoded mock numbers!
+    // configured in the Admin CMS Portal instead of failing or displaying outdated mock numbers (like ₹388.50)!
     if (typeof assetOrId === 'object' && assetOrId !== null) {
       const adminCmsPrice = (typeof assetOrId.currentPrice === 'number' && assetOrId.currentPrice > 0)
         ? assetOrId.currentPrice
@@ -568,10 +690,11 @@ class MarketPriceService {
     try {
       if (Array.isArray(investments) && investments.length > 0) {
         const listedItems = investments.filter((item) => isNseListedAsset(item));
-        await Promise.allSettled(listedItems.map((item) => this.fetchLivePrice(item)));
+        const symbols = listedItems.map((item) => item.symbolTicker || item.symbol || item.id);
+        await this.fetchLivePricesForAssets(symbols);
       } else {
         const symbols = Object.keys(NSE_TICKER_REGISTRY);
-        await Promise.allSettled(symbols.map((s) => this.fetchLivePrice(s)));
+        await this.fetchLivePricesForAssets(symbols);
       }
       await marketDataService.fetchLiveMarketQuotes();
     } finally {
@@ -581,9 +704,6 @@ class MarketPriceService {
     return this.priceCache;
   }
 
-  /**
-   * Backwards compatible alias
-   */
   public async refreshAllListedPrices(): Promise<Record<string, NseLivePrice>> {
     return this.refreshAllInvestments([]);
   }
@@ -601,7 +721,7 @@ class MarketPriceService {
       const livePrice = this.getLivePrice(item);
       const cfg = resolveDynamicTicker(item);
 
-      // 1. High priority: Live quote from Yahoo Finance
+      // 1. High priority: Live quote from dedicated Financial Market API
       // 2. Admin CMS custom configured price
       // 3. Calibrated baseline registry price
       const price = (livePrice && livePrice.source === 'YAHOO_LIVE' && livePrice.price > 0)
@@ -646,7 +766,7 @@ class MarketPriceService {
       };
     }
 
-    // Reliable Admin Fallback for unlisted/private fractional assets:
+    // Graceful Admin Fallback for unlisted/private fractional assets:
     // Preserves the custom Admin CMS edited price and minInvestment
     return {
       ...item,

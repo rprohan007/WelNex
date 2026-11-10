@@ -27,8 +27,8 @@ export const LISTED_TICKERS: Record<string, TickerConfig> = {
     symbolTicker: 'MINDSPACE',
     name: 'Mindspace Business Parks REIT',
     yahooSymbol: 'MINDSPACE.NS',
-    basePrice: 358.50,
-    previousClose: 357.20,
+    basePrice: 499.37,
+    previousClose: 497.10,
     category: 'REIT',
     tickSize: 0.05
   },
@@ -36,8 +36,8 @@ export const LISTED_TICKERS: Record<string, TickerConfig> = {
     symbolTicker: 'BIRET',
     name: 'Brookfield India Real Estate Trust',
     yahooSymbol: 'BIRET.NS',
-    basePrice: 274.50,
-    previousClose: 272.80,
+    basePrice: 318.30,
+    previousClose: 316.50,
     category: 'REIT',
     tickSize: 0.05
   },

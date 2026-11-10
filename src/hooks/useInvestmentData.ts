@@ -12,28 +12,23 @@ export const useInvestmentData = () => {
   const [error, setError] = useState<string | null>(null);
   const isFetchingLiveRef = useRef<boolean>(false);
 
-  // Dynamic Multi-Ticker Market Data Fetcher:
-  // Iterates over all listed investment cards in the platform and dynamically fetches live quotes for each asset's configured symbol/ISIN
+  // Dynamic Batch Market Data Fetcher:
+  // Collects all active asset symbols and calls fetchLivePricesForAssets
   const fetchLiveQuotesForAllListed = useCallback(async (items: InvestmentItem[]) => {
     if (!Array.isArray(items) || items.length === 0 || isFetchingLiveRef.current) return;
     isFetchingLiveRef.current = true;
 
     try {
       const listedItems = items.filter((inv) => isNseListedAsset(inv));
+      const symbols = listedItems.map((inv) => inv.symbolTicker || inv.symbol || inv.id);
 
-      // Concurrently query live Yahoo Finance quotes for each asset's configured ticker/ISIN
-      await Promise.allSettled(
-        listedItems.map(async (inv) => {
-          try {
-            await marketPriceService.fetchLivePrice(inv);
-          } catch (err) {
-            console.warn(`[useInvestmentData] Error fetching live quote for ${inv.symbolTicker || inv.symbol || inv.name}:`, err);
-          }
-        })
-      );
+      // Dedicated batch market API call with all .NS symbols
+      await marketPriceService.fetchLivePricesForAssets(symbols);
 
-      // Hydrate state with fresh live quotes
+      // Overwrite currentPrice, minInvestment, and pChange with exact live values
       setInvestments((prev) => marketPriceService.hydrateInvestments(prev));
+    } catch (err) {
+      console.warn('[useInvestmentData] Error fetching live prices:', err);
     } finally {
       isFetchingLiveRef.current = false;
     }

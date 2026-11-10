@@ -4,7 +4,7 @@ import { GlassCard } from '../common/GlassCard';
 import { Badge } from '../common/Badge';
 import { Button } from '../common/Button';
 import { useAssetLivePrice, useMarketData } from '../../hooks/useMarketData';
-import { isNseListedAsset } from '../../services/marketPriceService';
+import { isNseListedAsset, formatIstTimestamp } from '../../services/marketPriceService';
 import { 
   ArrowLeft, 
   ExternalLink, 
@@ -163,7 +163,7 @@ export const InvestmentDetailPage: React.FC<InvestmentDetailPageProps> = ({
               {isNseLive ? (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-black tracking-wider text-emerald-800 bg-emerald-500/15 border border-emerald-500/30">
                   <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
-                  Live NSE Tick
+                  ● Live NSE • {investment.lastPriceTimestampIst || formatIstTimestamp(investment.lastPriceUpdate || new Date())}
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold text-copper-800 bg-champagne-500/25 border border-champagne-500/40">
@@ -226,7 +226,7 @@ export const InvestmentDetailPage: React.FC<InvestmentDetailPageProps> = ({
                     {isNseLive ? (
                       <span className="inline-flex items-center gap-1 text-[9.5px] font-mono text-emerald-800 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded font-extrabold">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                        Live NSE Tick
+                        ● Live NSE • {investment.lastPriceTimestampIst || formatIstTimestamp(investment.lastPriceUpdate || new Date())}
                       </span>
                     ) : (
                       <span className="text-[9.5px] font-bold text-copper-800 bg-champagne-500/25 px-1.5 py-0.5 rounded">
