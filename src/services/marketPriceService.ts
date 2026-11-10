@@ -7,7 +7,7 @@ export interface NseTickerMapping {
   isin?: string;
   assetId?: string;
   name: string;
-  category: 'REIT' | 'InvIT' | 'Gold' | 'Bond';
+  category: string;
   defaultBasePrice: number;
   previousClose: number;
 }
@@ -15,11 +15,11 @@ export interface NseTickerMapping {
 export interface NseLivePrice {
   symbolTicker: string;
   yahooSymbol: string;
-  price: number;
+  price: number; // lastPrice
   priceFormatted: string; // e.g. "₹420.00"
   liveString: string; // e.g. "₹420.00 / unit (NSE Live)"
-  change24h: number; // e.g. -1.84
-  changePercent24h: number; // e.g. -0.44
+  change24h: number; // regularMarketChange
+  changePercent24h: number; // regularMarketChangePercent
   changeFormatted: string; // e.g. "-1.84"
   changePercentFormatted: string; // e.g. "-0.44%"
   dayChangeFormatted: string; // e.g. "-1.84 (-0.44%)"
@@ -28,13 +28,14 @@ export interface NseLivePrice {
   dayLow?: number;
   volume?: number;
   lastUpdated: string;
+  timestampIst: string; // e.g. "03:30:00 PM IST"
   isLive: boolean;
   source: 'YAHOO_LIVE' | 'ADMIN_CMS' | 'SUPABASE_CACHE' | 'SIMULATED_TICK' | 'FALLBACK';
 }
 
 /**
- * Verified Registry of NSE-Listed REITs, InvITs, and Alternative ETFs
- * Maps Ticker symbols, ISINs, and WelNex asset IDs to their corresponding NSE tickers (.NS)
+ * Known Registry of NSE-Listed REITs, InvITs, SM REITs, ETFs and Bonds
+ * Used as calibrated baselines, but the service accepts ANY ticker dynamically!
  */
 export const NSE_TICKER_REGISTRY: Record<string, NseTickerMapping> = {
   'EMBASSY': {
@@ -129,7 +130,7 @@ export const NSE_TICKER_REGISTRY: Record<string, NseTickerMapping> = {
   }
 };
 
-const PRICE_CACHE_KEY = 'welnex_nse_live_prices_cache_v2';
+const PRICE_CACHE_KEY = 'welnex_universal_market_prices_v3';
 
 /**
  * Format currency in Indian Rupees format (₹420.00)
@@ -144,30 +145,58 @@ export function formatInrCurrency(value: number, decimals: number = 2): string {
 }
 
 /**
- * Resolves an investment item or string identifier to its NSE ticker configuration
+ * Format timestamp in Indian Standard Time (IST)
  */
-export function resolveNseTicker(assetOrId: InvestmentItem | string): NseTickerMapping | undefined {
-  if (!assetOrId) return undefined;
+export function formatIstTimestamp(dateInput?: string | number | Date): string {
+  const date = dateInput ? new Date(dateInput) : new Date();
+  const validDate = isNaN(date.getTime()) ? new Date() : date;
 
+  return validDate.toLocaleTimeString('en-IN', {
+    timeZone: 'Asia/Kolkata',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true
+  }) + ' IST';
+}
+
+/**
+ * Dynamically resolves ANY asset ticker, symbol or ISIN to an NSE ticker configuration
+ */
+export function resolveDynamicTicker(assetOrId: InvestmentItem | string): NseTickerMapping {
   let searchKey = '';
   let isinKey = '';
   let idKey = '';
+  let itemName = '';
+  let itemCategory = 'REIT';
+  let adminPrice = 100.00;
 
   if (typeof assetOrId === 'string') {
-    searchKey = assetOrId.toUpperCase().replace(/\.NS$/, '').trim();
+    searchKey = assetOrId.toUpperCase().replace(/\.NS$/, '').replace(/\.BO$/, '').trim();
     idKey = assetOrId.toLowerCase().trim();
-  } else {
-    searchKey = (assetOrId.symbolTicker || assetOrId.symbol || '').toUpperCase().replace(/\.NS$/, '').trim();
+    itemName = searchKey;
+  } else if (assetOrId && typeof assetOrId === 'object') {
+    searchKey = (assetOrId.symbolTicker || assetOrId.symbol || assetOrId.id || '')
+      .toUpperCase()
+      .replace(/\.NS$/, '')
+      .replace(/\.BO$/, '')
+      .trim();
     isinKey = (assetOrId.isin || '').toUpperCase().trim();
     idKey = (assetOrId.id || '').toLowerCase().trim();
+    itemName = assetOrId.name || searchKey;
+    itemCategory = assetOrId.category || 'REIT';
+    if (typeof assetOrId.currentPrice === 'number' && assetOrId.currentPrice > 0) {
+      adminPrice = assetOrId.currentPrice;
+    } else if (assetOrId.minInvestmentNumeric && assetOrId.minInvestmentNumeric > 0) {
+      adminPrice = assetOrId.minInvestmentNumeric;
+    }
   }
 
-  // 1. Direct match on symbolTicker
+  // 1. Check known registry
   if (searchKey && NSE_TICKER_REGISTRY[searchKey]) {
     return NSE_TICKER_REGISTRY[searchKey];
   }
 
-  // 2. Match by ISIN, assetId, or normalized name
   const allEntries = Object.values(NSE_TICKER_REGISTRY);
   const matched = allEntries.find((item) => {
     if (isinKey && item.isin?.toUpperCase() === isinKey) return true;
@@ -176,33 +205,67 @@ export function resolveNseTicker(assetOrId: InvestmentItem | string): NseTickerM
     return false;
   });
 
-  return matched;
+  if (matched) return matched;
+
+  // 2. Dynamic generation for ANY listed asset ticker or symbol
+  const cleanTicker = searchKey || 'ASSET';
+  return {
+    symbolTicker: cleanTicker,
+    yahooSymbol: `${cleanTicker}.NS`,
+    name: itemName || cleanTicker,
+    category: itemCategory,
+    defaultBasePrice: adminPrice,
+    previousClose: adminPrice
+  };
 }
 
 /**
- * Checks whether an asset is a publicly traded NSE-listed instrument
- * Returns false for private fractional real estate, unlisted equity, private credit, and SDIs.
+ * Backwards compatibility export
+ */
+export const resolveNseTicker = resolveDynamicTicker;
+
+/**
+ * Checks whether an asset is a publicly traded exchange-listed instrument (REIT, SM REIT, InvIT, ETF, Bond)
+ * Returns false for private fractional real estate, unlisted equity, private credit, and P2P lending.
  */
 export function isNseListedAsset(item?: InvestmentItem | null): boolean {
   if (!item) return false;
 
-  // Private fractional CRE properties and periodic NAV assets are NOT publicly traded on NSE
+  // Unlisted or private periodic NAV assets
   if (item.priceMode === 'PERIODIC_NAV') return false;
-  if ((item.accessModel as string) === 'Private Placement' || (item.accessModel as string) === 'Accredited Syndicate') return false;
+  if ((item.accessModel as string) === 'Private Placement' || (item.accessModel as string) === 'Accredited Syndicate') {
+    return false;
+  }
 
   const category = (item.category || '').toLowerCase();
   const subCategory = (item.subCategory || '').toLowerCase();
 
   if (category.includes('fractional') || subCategory.includes('fractional')) return false;
   if (category.includes('private credit') || subCategory.includes('private credit')) return false;
+  if (category.includes('pre-ipo') || subCategory.includes('pre-ipo')) return false;
   if (category.includes('unlisted') || subCategory.includes('unlisted')) return false;
   if (category.includes('p2p') || subCategory.includes('p2p')) return false;
 
-  // Must match our verified NSE registry or be Direct Public REIT/InvIT
-  const ticker = resolveNseTicker(item);
-  if (ticker) return true;
+  // Explicit live market mode
+  if (item.priceMode === 'LIVE_MARKET') return true;
 
-  return item.accessModel === 'Direct Public' && (category.includes('reit') || category.includes('invit'));
+  // Listed categories: REITs, SM REITs, InvITs, ETFs, Bonds, Sovereign Gold
+  const isListedCategory = 
+    category.includes('reit') || 
+    category.includes('invit') || 
+    category.includes('bond') || 
+    category.includes('debt') || 
+    category.includes('gold') || 
+    category.includes('etf') || 
+    subCategory.includes('reit') || 
+    subCategory.includes('invit');
+
+  if (isListedCategory && item.accessModel === 'Direct Public') return true;
+
+  // Any asset with an exchange ticker not in unlisted category
+  if (item.symbolTicker && item.accessModel === 'Direct Public') return true;
+
+  return false;
 }
 
 class MarketPriceService {
@@ -231,7 +294,7 @@ class MarketPriceService {
       // ignore
     }
 
-    // Populate baseline if cache is empty or incomplete
+    // Populate baseline if cache is empty
     Object.values(NSE_TICKER_REGISTRY).forEach((cfg) => {
       if (!this.priceCache[cfg.symbolTicker] || this.priceCache[cfg.symbolTicker].source === 'FALLBACK') {
         const change = Number((cfg.defaultBasePrice - cfg.previousClose).toFixed(2));
@@ -254,6 +317,7 @@ class MarketPriceService {
           dayHigh: Number((cfg.defaultBasePrice * 1.01).toFixed(2)),
           dayLow: Number((cfg.defaultBasePrice * 0.99).toFixed(2)),
           lastUpdated: new Date().toISOString(),
+          timestampIst: formatIstTimestamp(new Date()),
           isLive: true,
           source: 'FALLBACK'
         };
@@ -279,16 +343,15 @@ class MarketPriceService {
 
     Object.keys(quotes).forEach((ticker) => {
       const quote = quotes[ticker];
-      const cfg = NSE_TICKER_REGISTRY[ticker] || resolveNseTicker(ticker);
+      const cfg = resolveDynamicTicker(ticker);
       if (!cfg || !quote) return;
 
-      // Critical Protection: Do NOT overwrite verified YAHOO_LIVE quotes with random simulation ticks!
+      // Protection: Do NOT overwrite verified YAHOO_LIVE quotes with random simulation ticks!
       const currentEntry = this.priceCache[cfg.symbolTicker];
       if (currentEntry && currentEntry.source === 'YAHOO_LIVE' && quote.source !== 'LIVE_API') {
         return;
       }
 
-      // If quote is from LIVE_API, update it
       if (quote.source === 'LIVE_API' && typeof quote.price === 'number') {
         const price = Number(quote.price.toFixed(2));
         const change = Number((quote.priceChange24h ?? (price - cfg.previousClose)).toFixed(2));
@@ -312,6 +375,7 @@ class MarketPriceService {
           dayLow: quote.dayLow || Number((price * 0.99).toFixed(2)),
           volume: quote.volume,
           lastUpdated: quote.lastUpdated || new Date().toISOString(),
+          timestampIst: formatIstTimestamp(quote.lastUpdated || new Date()),
           isLive: true,
           source: 'YAHOO_LIVE'
         };
@@ -350,36 +414,31 @@ class MarketPriceService {
    * Get cached live price for an asset or ticker
    */
   public getLivePrice(assetOrId: InvestmentItem | string): NseLivePrice | undefined {
-    const cfg = resolveNseTicker(assetOrId);
+    const cfg = resolveDynamicTicker(assetOrId);
     if (!cfg) return undefined;
     return this.priceCache[cfg.symbolTicker];
   }
 
   /**
-   * Fetches real live quote from Yahoo Finance API for an asset or ticker.
-   *
-   * As specified in user requirements:
-   * 1. Direct fetch to Yahoo Finance endpoint:
-   *    https://query1.finance.yahoo.com/v8/finance/chart/${symbol}.NS
-   * 2. Fallback to Vite proxy / public CORS proxies for browser compatibility
-   * 3. Fallback Handling: If symbol query errors or times out, falls back to manually configured Admin CMS price
+   * Universal Dynamic Multi-Ticker Fetcher:
+   * Accepts ANY asset ticker or symbol dynamically and fetches live quotes using CORS-compliant proxy endpoints.
+   * Extracts regularMarketPrice, chartPreviousClose, regularMarketChange, and regularMarketChangePercent.
+   * If error or timeout occurs, falls back cleanly to Admin CMS configured price.
    */
   public async fetchLivePrice(assetOrId: InvestmentItem | string): Promise<NseLivePrice | undefined> {
-    const cfg = resolveNseTicker(assetOrId);
-    if (!cfg) return undefined;
+    const cfg = resolveDynamicTicker(assetOrId);
+    if (!cfg || !cfg.symbolTicker) return undefined;
 
     const symbol = cfg.symbolTicker;
     const targetSymbol = cfg.yahooSymbol || `${symbol}.NS`;
 
-    // Array of endpoints to attempt:
-    // 1. Direct Yahoo Finance endpoint (specified in prompt)
-    // 2. Local Vite proxy endpoint (/api/yahoo-finance/v8/finance/chart/...)
-    // 3. Resilient CORS proxies for environments blocking cross-origin requests
+    // Dynamic fetch requests across multiple CORS-compliant proxy channels
     const candidateUrls = [
       `https://query1.finance.yahoo.com/v8/finance/chart/${targetSymbol}`,
       `/api/yahoo-finance/v8/finance/chart/${targetSymbol}`,
       `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${targetSymbol}`)}`,
-      `https://corsproxy.io/?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${targetSymbol}`)}`
+      `https://corsproxy.io/?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${targetSymbol}`)}`,
+      `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${targetSymbol}`)}`
     ];
 
     for (const url of candidateUrls) {
@@ -396,11 +455,24 @@ class MarketPriceService {
 
           if (meta && typeof meta.regularMarketPrice === 'number') {
             const regularMarketPrice = Number(meta.regularMarketPrice.toFixed(2));
-            const chartPreviousClose = Number((meta.chartPreviousClose || meta.previousClose || cfg.previousClose).toFixed(2));
-            const change = Number((regularMarketPrice - chartPreviousClose).toFixed(2));
-            const pChange = chartPreviousClose !== 0 ? Number(((change / chartPreviousClose) * 100).toFixed(2)) : 0;
-            const isPositive = change >= 0;
+            const chartPreviousClose = Number(
+              (meta.chartPreviousClose || meta.previousClose || cfg.previousClose || regularMarketPrice).toFixed(2)
+            );
+
+            // Extract regularMarketChange and regularMarketChangePercent
+            const regularMarketChange = typeof meta.regularMarketChange === 'number'
+              ? Number(meta.regularMarketChange.toFixed(2))
+              : Number((regularMarketPrice - chartPreviousClose).toFixed(2));
+
+            const regularMarketChangePercent = typeof meta.regularMarketChangePercent === 'number'
+              ? Number(meta.regularMarketChangePercent.toFixed(2))
+              : (chartPreviousClose !== 0 ? Number(((regularMarketChange / chartPreviousClose) * 100).toFixed(2)) : 0);
+
+            const isPositive = regularMarketChange >= 0;
             const sign = isPositive ? '+' : '';
+            const marketTimestamp = meta.regularMarketTime
+              ? new Date(meta.regularMarketTime * 1000)
+              : new Date();
 
             const liveData: NseLivePrice = {
               symbolTicker: cfg.symbolTicker,
@@ -408,16 +480,17 @@ class MarketPriceService {
               price: regularMarketPrice,
               priceFormatted: formatInrCurrency(regularMarketPrice),
               liveString: `${formatInrCurrency(regularMarketPrice)} / unit (NSE Live)`,
-              change24h: change,
-              changePercent24h: pChange,
-              changeFormatted: `${sign}${change.toFixed(2)}`,
-              changePercentFormatted: `${sign}${pChange.toFixed(2)}%`,
-              dayChangeFormatted: `${sign}${change.toFixed(2)} (${sign}${pChange.toFixed(2)}%)`,
+              change24h: regularMarketChange,
+              changePercent24h: regularMarketChangePercent,
+              changeFormatted: `${sign}${regularMarketChange.toFixed(2)}`,
+              changePercentFormatted: `${sign}${regularMarketChangePercent.toFixed(2)}%`,
+              dayChangeFormatted: `${sign}${regularMarketChange.toFixed(2)} (${sign}${regularMarketChangePercent.toFixed(2)}%)`,
               isPositive,
               dayHigh: Number((meta.regularMarketDayHigh || meta.dayHigh || regularMarketPrice * 1.01).toFixed(2)),
               dayLow: Number((meta.regularMarketDayLow || meta.dayLow || regularMarketPrice * 0.99).toFixed(2)),
               volume: meta.regularMarketVolume,
-              lastUpdated: new Date().toISOString(),
+              lastUpdated: marketTimestamp.toISOString(),
+              timestampIst: formatIstTimestamp(marketTimestamp),
               isLive: true,
               source: 'YAHOO_LIVE'
             };
@@ -429,14 +502,13 @@ class MarketPriceService {
           }
         }
       } catch {
-        // Continue to next candidate URL
         continue;
       }
     }
 
-    // Fallback Handling:
-    // If a symbol query encounters an error or network timeout, fall back to the manually configured
-    // Admin CMS price instead of an unverified hardcoded mock number!
+    // Reliable Admin Fallback:
+    // If a symbol query encounters an error or timeout, fall back cleanly to the custom price
+    // configured in the Admin CMS Portal instead of failing or displaying hardcoded mock numbers!
     if (typeof assetOrId === 'object' && assetOrId !== null) {
       const adminCmsPrice = (typeof assetOrId.currentPrice === 'number' && assetOrId.currentPrice > 0)
         ? assetOrId.currentPrice
@@ -469,6 +541,7 @@ class MarketPriceService {
         dayHigh: assetOrId.dayHigh || Number((adminCmsPrice * 1.01).toFixed(2)),
         dayLow: assetOrId.dayLow || Number((adminCmsPrice * 0.99).toFixed(2)),
         lastUpdated: assetOrId.lastPriceUpdate || new Date().toISOString(),
+        timestampIst: formatIstTimestamp(assetOrId.lastPriceUpdate || new Date()),
         isLive: true,
         source: 'ADMIN_CMS'
       };
@@ -481,12 +554,11 @@ class MarketPriceService {
   }
 
   /**
-   * Refresh all NSE listed prices concurrently
+   * Refreshes all listed prices across all investments dynamically
    */
-  public async refreshAllListedPrices(): Promise<Record<string, NseLivePrice>> {
+  public async refreshAllInvestments(investments: InvestmentItem[]): Promise<Record<string, NseLivePrice>> {
     const now = Date.now();
-    // Debounce to at most once every 5 seconds
-    if (this.fetchInProgress || (now - this.lastFetchTime < 5000)) {
+    if (this.fetchInProgress || (now - this.lastFetchTime < 4000)) {
       return this.priceCache;
     }
 
@@ -494,8 +566,13 @@ class MarketPriceService {
     this.lastFetchTime = now;
 
     try {
-      const symbols = Object.keys(NSE_TICKER_REGISTRY);
-      await Promise.allSettled(symbols.map((s) => this.fetchLivePrice(s)));
+      if (Array.isArray(investments) && investments.length > 0) {
+        const listedItems = investments.filter((item) => isNseListedAsset(item));
+        await Promise.allSettled(listedItems.map((item) => this.fetchLivePrice(item)));
+      } else {
+        const symbols = Object.keys(NSE_TICKER_REGISTRY);
+        await Promise.allSettled(symbols.map((s) => this.fetchLivePrice(s)));
+      }
       await marketDataService.fetchLiveMarketQuotes();
     } finally {
       this.fetchInProgress = false;
@@ -505,9 +582,16 @@ class MarketPriceService {
   }
 
   /**
-   * Hydrates a single investment item with live NSE pricing.
-   * If the asset is a private fractional real estate property, preserves the Admin CMS edited minimum ticket price as fallback.
-   * If an NSE ticker query encounters an error or timeout, falls back to the manually configured Admin CMS price.
+   * Backwards compatible alias
+   */
+  public async refreshAllListedPrices(): Promise<Record<string, NseLivePrice>> {
+    return this.refreshAllInvestments([]);
+  }
+
+  /**
+   * Hydrates a single investment item with live pricing.
+   * If the asset is a listed instrument, updates currentPrice, minInvestment, and live quotes.
+   * If unlisted/private fractional, cleanly preserves the custom Admin CMS price.
    */
   public hydrateInvestment(item: InvestmentItem): InvestmentItem {
     if (!item) return item;
@@ -515,20 +599,20 @@ class MarketPriceService {
     // Check if publicly traded on NSE
     if (isNseListedAsset(item)) {
       const livePrice = this.getLivePrice(item);
-      const cfg = resolveNseTicker(item);
+      const cfg = resolveDynamicTicker(item);
 
-      // 1. High priority: Verified live price from Yahoo Finance query
-      // 2. Fallback: Manually configured Admin CMS price on the item (item.currentPrice or item.minInvestmentNumeric)
-      // 3. Fallback: Calibrated baseline registry price (e.g. 420.00 for EMBASSY)
+      // 1. High priority: Live quote from Yahoo Finance
+      // 2. Admin CMS custom configured price
+      // 3. Calibrated baseline registry price
       const price = (livePrice && livePrice.source === 'YAHOO_LIVE' && livePrice.price > 0)
         ? livePrice.price
         : (typeof item.currentPrice === 'number' && item.currentPrice > 0)
           ? item.currentPrice
           : (item.minInvestmentNumeric && item.minInvestmentNumeric > 0)
             ? item.minInvestmentNumeric
-            : (livePrice?.price ?? cfg?.defaultBasePrice ?? 420.00);
+            : (livePrice?.price ?? cfg.defaultBasePrice ?? 420.00);
 
-      const prevClose = cfg?.previousClose ?? price;
+      const prevClose = cfg.previousClose || price;
       const change = (livePrice && livePrice.source === 'YAHOO_LIVE')
         ? livePrice.change24h
         : (typeof item.priceChange24h === 'number')
@@ -542,6 +626,7 @@ class MarketPriceService {
           : (prevClose ? Number(((change / prevClose) * 100).toFixed(2)) : 0);
 
       const formattedPrice = formatInrCurrency(price);
+      const timestampIst = livePrice?.timestampIst || formatIstTimestamp(item.lastPriceUpdate || new Date());
 
       return {
         ...item,
@@ -556,12 +641,13 @@ class MarketPriceService {
         dayLow: livePrice?.dayLow || item.dayLow || Number((price * 0.99).toFixed(2)),
         minInvestmentNumeric: price,
         minInvestment: `${formattedPrice} (1 Unit on NSE/BSE)`,
-        lastPriceUpdate: livePrice?.lastUpdated || item.lastPriceUpdate || new Date().toISOString()
+        lastPriceUpdate: livePrice?.lastUpdated || item.lastPriceUpdate || new Date().toISOString(),
+        lastPriceTimestampIst: timestampIst
       };
     }
 
-    // Admin Override Fallback:
-    // If not publicly traded on NSE, preserve the Admin CMS edited minimum ticket price and properties
+    // Reliable Admin Fallback for unlisted/private fractional assets:
+    // Preserves the custom Admin CMS edited price and minInvestment
     return {
       ...item,
       isNseLive: false,

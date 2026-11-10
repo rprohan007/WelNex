@@ -147,6 +147,7 @@ export interface InvestmentItem {
   priceChange24h?: number; // Numeric shift in ₹
   priceChangePercent24h?: number; // Numeric % shift
   lastPriceUpdate?: string; // Timestamp
+  lastPriceTimestampIst?: string; // e.g. "03:30:00 PM IST"
   yieldPayoutFrequency?: YieldPayoutFrequency | string; // "Quarterly", "Monthly", "Annual", or "Maturity"
   dayHigh?: number;
   dayLow?: number;
