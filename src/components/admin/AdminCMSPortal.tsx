@@ -184,7 +184,7 @@ export const AdminCMSPortal: React.FC<AdminCMSPortalProps> = ({
   // Dual-Mode Pricing Architecture Form State (Prompt Requirement 4)
   const [formPriceMode, setFormPriceMode] = useState<'LIVE_MARKET' | 'PERIODIC_NAV'>('LIVE_MARKET');
   const [formSymbolTicker, setFormSymbolTicker] = useState('');
-  const [formCurrentPrice, setFormCurrentPrice] = useState('388.50');
+  const [formCurrentPrice, setFormCurrentPrice] = useState('419.93');
   const [formPriceChange24h, setFormPriceChange24h] = useState('0.00');
   const [formPriceChangePercent24h, setFormPriceChangePercent24h] = useState('0.00');
   const [formYieldPayoutFrequency, setFormYieldPayoutFrequency] = useState<string>('Quarterly');

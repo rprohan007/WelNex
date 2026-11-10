@@ -5,9 +5,31 @@ import { fetchInvestmentsFromSupabase } from '../services/investmentsService';
 import { marketPriceService, isNseListedAsset } from '../services/marketPriceService';
 
 export const useInvestmentData = () => {
-  const [investments, setInvestments] = useState<InvestmentItem[]>(() =>
-    marketPriceService.hydrateInvestments(getAllInvestments())
-  );
+  const [investments, setInvestments] = useState<InvestmentItem[]>(() => {
+    // Bust stale localStorage caches completely on startup to prevent hydrating outdated mock values (₹388.50)
+    try {
+      const legacyKeys = [
+        'welnex_custom_investments',
+        'welnex_investments_cache',
+        'welnex_market_quotes_cache',
+        'welnex_universal_market_prices_v5',
+        'welnex_universal_market_prices_v4',
+        'welnex_universal_market_prices_v3',
+        'welnex_universal_market_prices_v2',
+        'welnex_universal_market_prices_v1',
+        'welnex_nse_live_prices_cache'
+      ];
+      legacyKeys.forEach((key) => {
+        try { localStorage.removeItem(key); } catch {}
+      });
+      console.log('[useInvestmentData] Stale localStorage price caches wiped. Hydrating strictly from updated baselines.');
+    } catch {
+      // ignore
+    }
+
+    // Hydrate strictly from updated baseline catalog
+    return marketPriceService.hydrateInvestments(getAllInvestments());
+  });
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const isFetchingLiveRef = useRef<boolean>(false);
@@ -25,10 +47,14 @@ export const useInvestmentData = () => {
       // Dedicated batch market API call with all .NS symbols
       await marketPriceService.fetchLivePricesForAssets(symbols);
 
-      // Overwrite currentPrice, minInvestment, and pChange with exact live values
-      setInvestments((prev) => marketPriceService.hydrateInvestments(prev));
+      // Force State Overwrite: completely overwrite existing state with fresh live quotes
+      setInvestments((prev) => {
+        const fresh = marketPriceService.hydrateInvestments(prev);
+        console.log('[useInvestmentData] Force-overwrote investments state with live quotes:', fresh.map((i) => `${i.symbolTicker || i.id}: ₹${i.currentPrice}`));
+        return [...fresh];
+      });
     } catch (err) {
-      console.warn('[useInvestmentData] Error fetching live prices:', err);
+      console.error('[useInvestmentData] Error fetching live prices:', err);
     } finally {
       isFetchingLiveRef.current = false;
     }
@@ -69,7 +95,10 @@ export const useInvestmentData = () => {
 
     // Subscribe to live market price ticks from marketPriceService
     const unsubscribe = marketPriceService.subscribe(() => {
-      setInvestments((prev) => marketPriceService.hydrateInvestments(prev));
+      setInvestments((prev) => {
+        const fresh = marketPriceService.hydrateInvestments(prev);
+        return [...fresh];
+      });
     });
 
     // Periodic live refresh every 30 seconds

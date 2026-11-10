@@ -184,7 +184,25 @@ export const getAllInvestments = (): InvestmentItem[] => {
   try {
     const stored = localStorage.getItem('welnex_custom_investments');
     if (stored) {
-      return JSON.parse(stored);
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        // Sanitize baseline prices for core REITs and listed assets so stale cached mock prices (like 388.50) are eliminated
+        return parsed.map((item: InvestmentItem) => {
+          const baseline = INVESTMENTS_DATA.find((b) => b.id === item.id);
+          if (baseline) {
+            if (item.id === 'embassy-office-parks-reit' && (!item.currentPrice || item.currentPrice < 400)) {
+              return { ...item, currentPrice: baseline.currentPrice, minInvestment: baseline.minInvestment, minInvestmentNumeric: baseline.minInvestmentNumeric };
+            }
+            if (item.id === 'mindspace-business-parks-reit' && (!item.currentPrice || item.currentPrice < 450)) {
+              return { ...item, currentPrice: baseline.currentPrice, minInvestment: baseline.minInvestment, minInvestmentNumeric: baseline.minInvestmentNumeric };
+            }
+            if (item.id === 'brookfield-india-reit' && (!item.currentPrice || item.currentPrice < 300)) {
+              return { ...item, currentPrice: baseline.currentPrice, minInvestment: baseline.minInvestment, minInvestmentNumeric: baseline.minInvestmentNumeric };
+            }
+          }
+          return item;
+        });
+      }
     }
   } catch {
     // fallback
