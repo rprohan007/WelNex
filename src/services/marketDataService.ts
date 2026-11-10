@@ -18,8 +18,8 @@ export const LISTED_TICKERS: Record<string, TickerConfig> = {
     symbolTicker: 'EMBASSY',
     name: 'Embassy Office Parks REIT',
     yahooSymbol: 'EMBASSY.NS',
-    basePrice: 420.00,
-    previousClose: 421.84,
+    basePrice: 419.93,
+    previousClose: 421.77,
     category: 'REIT',
     tickSize: 0.05
   },

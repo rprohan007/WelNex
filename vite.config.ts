@@ -21,6 +21,18 @@ export default defineConfig({
         headers: {
           'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
         }
+      },
+      '/.netlify/functions/stock-prices': {
+        target: 'https://query1.finance.yahoo.com',
+        changeOrigin: true,
+        rewrite: (path) => {
+          const match = path.match(/[?&]symbols=([^&]+)/);
+          const symbols = match ? match[1] : '';
+          return `/v7/finance/quote?symbols=${symbols}`;
+        },
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+        }
       }
     }
   }

@@ -15,9 +15,9 @@ export interface NseTickerMapping {
 export interface NseLivePrice {
   symbolTicker: string;
   yahooSymbol: string;
-  price: number; // lastPrice
-  priceFormatted: string; // e.g. "₹420.00"
-  liveString: string; // e.g. "₹420.00 / unit (NSE Live)"
+  price: number; // lastPrice / regularMarketPrice
+  priceFormatted: string; // e.g. "₹419.93"
+  liveString: string; // e.g. "₹419.93 / unit (NSE Live)"
   change24h: number; // regularMarketChange
   changePercent24h: number; // regularMarketChangePercent
   changeFormatted: string; // e.g. "-1.84"
@@ -30,12 +30,12 @@ export interface NseLivePrice {
   lastUpdated: string;
   timestampIst: string; // e.g. "10:08:30 AM IST"
   isLive: boolean;
-  source: 'YAHOO_LIVE' | 'ADMIN_CMS' | 'SUPABASE_CACHE' | 'SIMULATED_TICK' | 'FALLBACK';
+  source: 'NETLIFY_FUNCTION' | 'YAHOO_LIVE' | 'ADMIN_CMS' | 'SUPABASE_CACHE' | 'SIMULATED_TICK' | 'FALLBACK';
 }
 
 /**
  * Standardized baseline registry for NSE REITs, InvITs, and listed alternatives.
- * Calibrated with exact market values (e.g. Embassy ~₹420.00, Mindspace ~₹499.37, Brookfield ~₹318.30).
+ * Calibrated with exact market closing prices (Embassy: ₹419.93, Mindspace: ₹499.37, Brookfield: ₹318.30).
  */
 export const NSE_TICKER_REGISTRY: Record<string, NseTickerMapping> = {
   'EMBASSY': {
@@ -45,8 +45,8 @@ export const NSE_TICKER_REGISTRY: Record<string, NseTickerMapping> = {
     assetId: 'embassy-office-parks-reit',
     name: 'Embassy Office Parks REIT',
     category: 'REIT',
-    defaultBasePrice: 420.00,
-    previousClose: 421.84
+    defaultBasePrice: 419.93,
+    previousClose: 421.77
   },
   'MINDSPACE': {
     symbolTicker: 'MINDSPACE',
@@ -130,10 +130,10 @@ export const NSE_TICKER_REGISTRY: Record<string, NseTickerMapping> = {
   }
 };
 
-const PRICE_CACHE_KEY = 'welnex_universal_market_prices_v4';
+const PRICE_CACHE_KEY = 'welnex_universal_market_prices_v5';
 
 /**
- * Format currency in Indian Rupees format (₹420.00)
+ * Format currency in Indian Rupees format (₹419.93)
  */
 export function formatInrCurrency(value: number, decimals: number = 2): string {
   return new Intl.NumberFormat('en-IN', {
@@ -161,7 +161,7 @@ export function formatIstTimestamp(dateInput?: string | number | Date): string {
 }
 
 /**
- * Dynamically resolves ANY asset ticker, symbol or ISIN to an NSE ticker configuration
+ * Dynamically resolves ANY asset ticker, symbol, ID or ISIN to an NSE ticker configuration
  */
 export function resolveDynamicTicker(assetOrId: InvestmentItem | string): NseTickerMapping {
   let searchKey = '';
@@ -271,7 +271,7 @@ class MarketPriceService {
     this.restoreCache();
     this.initializeFromMarketService();
 
-    // Listen to marketDataService for quotes, but never let simulated ticks overwrite YAHOO_LIVE quotes
+    // Listen to marketDataService for quotes, but never let simulated ticks overwrite live quotes
     marketDataService.subscribe((quotes) => {
       this.syncWithMarketQuotes(quotes);
     });
@@ -287,7 +287,7 @@ class MarketPriceService {
       // ignore
     }
 
-    // Populate baseline if cache is empty
+    // Populate baseline with accurate market closing prices
     Object.values(NSE_TICKER_REGISTRY).forEach((cfg) => {
       if (!this.priceCache[cfg.symbolTicker] || this.priceCache[cfg.symbolTicker].source === 'FALLBACK') {
         const change = Number((cfg.defaultBasePrice - cfg.previousClose).toFixed(2));
@@ -339,9 +339,9 @@ class MarketPriceService {
       const cfg = resolveDynamicTicker(ticker);
       if (!cfg || !quote) return;
 
-      // Protection: Do NOT overwrite verified YAHOO_LIVE quotes with random simulation ticks!
+      // Protection: Do NOT overwrite verified live quotes with random simulation ticks!
       const currentEntry = this.priceCache[cfg.symbolTicker];
-      if (currentEntry && currentEntry.source === 'YAHOO_LIVE' && quote.source !== 'LIVE_API') {
+      if (currentEntry && (currentEntry.source === 'NETLIFY_FUNCTION' || currentEntry.source === 'YAHOO_LIVE') && quote.source !== 'LIVE_API') {
         return;
       }
 
@@ -370,7 +370,7 @@ class MarketPriceService {
           lastUpdated: quote.lastUpdated || new Date().toISOString(),
           timestampIst: formatIstTimestamp(quote.lastUpdated || new Date()),
           isLive: true,
-          source: 'YAHOO_LIVE'
+          source: 'NETLIFY_FUNCTION'
         };
         updated = true;
       }
@@ -413,9 +413,11 @@ class MarketPriceService {
   }
 
   /**
-   * Universal Dedicated Financial Market API Function:
-   * Passes all asset symbols with .NS suffix in a single batch call or concurrent queue.
-   * Extracts regularMarketPrice, regularMarketChange, and regularMarketChangePercent for every queried symbol.
+   * Universal Dedicated Netlify Serverless Function Proxy Pipeline:
+   * 1. Constructs a batch request passing all symbols with .NS suffix to Netlify Function:
+   *    /.netlify/functions/stock-prices?symbols=EMBASSY.NS,MINDSPACE.NS,BIRET.NS,PGINVIT.NS
+   * 2. Extracts regularMarketPrice, regularMarketChange, and regularMarketChangePercent for every queried symbol.
+   * 3. Maps to each asset ID in application state.
    */
   public async fetchLivePricesForAssets(symbols: string[]): Promise<Record<string, NseLivePrice>> {
     if (!Array.isArray(symbols) || symbols.length === 0) {
@@ -423,44 +425,28 @@ class MarketPriceService {
     }
 
     // 1. Normalize all symbols to ensure uppercase and .NS suffix
-    const cleanToNsMap: Record<string, string> = {};
-    const nsSymbols: string[] = [];
+    const cleanSymbols = symbols
+      .map((s) => s.toUpperCase().replace(/\.NS$/, '').replace(/\.BO$/, '').trim())
+      .filter(Boolean);
+    const formattedSymbols = Array.from(new Set(cleanSymbols.map((s) => `${s}.NS`)));
 
-    symbols.forEach((sym) => {
-      const clean = sym.toUpperCase().replace(/\.NS$/, '').replace(/\.BO$/, '').trim();
-      if (!clean) return;
-      const nsSym = `${clean}.NS`;
-      cleanToNsMap[clean] = nsSym;
-      cleanToNsMap[nsSym] = clean;
-      if (!nsSymbols.includes(nsSym)) {
-        nsSymbols.push(nsSym);
-      }
-    });
-
-    if (nsSymbols.length === 0) {
+    if (formattedSymbols.length === 0) {
       return this.priceCache;
     }
 
-    const symbolsParam = nsSymbols.join(',');
+    const symbolsParam = formattedSymbols.join(',');
     let batchSuccess = false;
 
-    // 2. Standardized Financial Market Batch API endpoints
+    // 2. Primary: Netlify Serverless Function endpoint + resilient fallbacks
     const batchEndpoints: { url: string; headers?: Record<string, string> }[] = [
-      // Standard v7 quote batch query
+      // Primary Netlify Serverless Function endpoint
+      { url: `/.netlify/functions/stock-prices?symbols=${encodeURIComponent(symbolsParam)}` },
+      { url: `/.netlify/functions/stock-prices?symbols=${symbolsParam}` },
+      // Direct Yahoo Finance v7 quote endpoint (if running in backend/server environment)
       { url: `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(symbolsParam)}` },
-      // Local serverless/Vite proxy
+      // Local Vite dev proxy
       { url: `/api/yahoo-finance/v7/finance/quote?symbols=${encodeURIComponent(symbolsParam)}` },
-      // RapidAPI endpoint if key is present
-      ...(typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_RAPIDAPI_KEY ? [
-        {
-          url: `https://yahoo-finance15.p.rapidapi.com/api/v1/markets/stock/quotes?ticker=${encodeURIComponent(symbolsParam)}`,
-          headers: {
-            'X-RapidAPI-Key': (import.meta as any).env.VITE_RAPIDAPI_KEY,
-            'X-RapidAPI-Host': 'yahoo-finance15.p.rapidapi.com'
-          }
-        }
-      ] : []),
-      // Public CORS proxies for environments blocking cross-origin requests
+      // Public CORS proxies
       { url: `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbolsParam}`)}` },
       { url: `https://corsproxy.io/?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbolsParam}`)}` }
     ];
@@ -468,7 +454,7 @@ class MarketPriceService {
     for (const ep of batchEndpoints) {
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 4000);
+        const timeoutId = setTimeout(() => controller.abort(), 4500);
         const res = await fetch(ep.url, {
           signal: controller.signal,
           headers: ep.headers
@@ -477,7 +463,6 @@ class MarketPriceService {
 
         if (res && res.ok) {
           const json = await res.json();
-          // Extract quotes array from v7 quote response or RapidAPI body
           const quotesList = json?.quoteResponse?.result || json?.body || json?.quotes || [];
           if (Array.isArray(quotesList) && quotesList.length > 0) {
             quotesList.forEach((q: any) => {
@@ -517,7 +502,7 @@ class MarketPriceService {
                   lastUpdated: marketTime.toISOString(),
                   timestampIst: formatIstTimestamp(marketTime),
                   isLive: true,
-                  source: 'YAHOO_LIVE'
+                  source: 'NETLIFY_FUNCTION'
                 };
 
                 this.priceCache[cleanTicker] = liveData;
@@ -536,7 +521,7 @@ class MarketPriceService {
     }
 
     // 3. Concurrent Queue Fallback:
-    // If the batch endpoint didn't succeed or was rate limited, execute concurrent fetches
+    // If the batch endpoint didn't succeed, execute concurrent individual queries
     if (!batchSuccess) {
       await Promise.allSettled(
         symbols.map((sym) => this.fetchLivePrice(sym))
@@ -547,7 +532,7 @@ class MarketPriceService {
   }
 
   /**
-   * Fetches real live quote for a single asset or ticker using CORS proxies.
+   * Fetches real live quote for a single asset or ticker using Netlify Function / CORS proxies.
    */
   public async fetchLivePrice(assetOrId: InvestmentItem | string): Promise<NseLivePrice | undefined> {
     const cfg = resolveDynamicTicker(assetOrId);
@@ -557,11 +542,11 @@ class MarketPriceService {
     const targetSymbol = cfg.yahooSymbol || `${symbol}.NS`;
 
     const candidateUrls = [
+      `/.netlify/functions/stock-prices?symbols=${targetSymbol}`,
       `https://query1.finance.yahoo.com/v8/finance/chart/${targetSymbol}`,
       `/api/yahoo-finance/v8/finance/chart/${targetSymbol}`,
       `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${targetSymbol}`)}`,
-      `https://corsproxy.io/?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${targetSymbol}`)}`,
-      `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${targetSymbol}`)}`
+      `https://corsproxy.io/?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${targetSymbol}`)}`
     ];
 
     for (const url of candidateUrls) {
@@ -574,27 +559,34 @@ class MarketPriceService {
 
         if (response && response.ok) {
           const json = await response.json();
+          // Handle quoteResponse (v7/Netlify) or chart.result (v8)
+          const quote = json?.quoteResponse?.result?.[0] || json?.body?.[0];
           const meta = json?.chart?.result?.[0]?.meta;
 
-          if (meta && typeof meta.regularMarketPrice === 'number') {
-            const regularMarketPrice = Number(meta.regularMarketPrice.toFixed(2));
+          const rawPrice = quote?.regularMarketPrice ?? meta?.regularMarketPrice;
+
+          if (typeof rawPrice === 'number') {
+            const regularMarketPrice = Number(rawPrice.toFixed(2));
             const chartPreviousClose = Number(
-              (meta.chartPreviousClose || meta.previousClose || cfg.previousClose || regularMarketPrice).toFixed(2)
+              (quote?.regularMarketPreviousClose || quote?.previousClose || meta?.chartPreviousClose || meta?.previousClose || cfg.previousClose || regularMarketPrice).toFixed(2)
             );
 
-            const regularMarketChange = typeof meta.regularMarketChange === 'number'
-              ? Number(meta.regularMarketChange.toFixed(2))
-              : Number((regularMarketPrice - chartPreviousClose).toFixed(2));
+            const regularMarketChange = typeof quote?.regularMarketChange === 'number'
+              ? Number(quote.regularMarketChange.toFixed(2))
+              : typeof meta?.regularMarketChange === 'number'
+                ? Number(meta.regularMarketChange.toFixed(2))
+                : Number((regularMarketPrice - chartPreviousClose).toFixed(2));
 
-            const regularMarketChangePercent = typeof meta.regularMarketChangePercent === 'number'
-              ? Number(meta.regularMarketChangePercent.toFixed(2))
-              : (chartPreviousClose !== 0 ? Number(((regularMarketChange / chartPreviousClose) * 100).toFixed(2)) : 0);
+            const regularMarketChangePercent = typeof quote?.regularMarketChangePercent === 'number'
+              ? Number(quote.regularMarketChangePercent.toFixed(2))
+              : typeof meta?.regularMarketChangePercent === 'number'
+                ? Number(meta.regularMarketChangePercent.toFixed(2))
+                : (chartPreviousClose !== 0 ? Number(((regularMarketChange / chartPreviousClose) * 100).toFixed(2)) : 0);
 
             const isPositive = regularMarketChange >= 0;
             const sign = isPositive ? '+' : '';
-            const marketTimestamp = meta.regularMarketTime
-              ? new Date(meta.regularMarketTime * 1000)
-              : new Date();
+            const rawTime = quote?.regularMarketTime || meta?.regularMarketTime;
+            const marketTimestamp = rawTime ? new Date(rawTime * 1000) : new Date();
 
             const liveData: NseLivePrice = {
               symbolTicker: cfg.symbolTicker,
@@ -608,13 +600,13 @@ class MarketPriceService {
               changePercentFormatted: `${sign}${regularMarketChangePercent.toFixed(2)}%`,
               dayChangeFormatted: `${sign}${regularMarketChange.toFixed(2)} (${sign}${regularMarketChangePercent.toFixed(2)}%)`,
               isPositive,
-              dayHigh: Number((meta.regularMarketDayHigh || meta.dayHigh || regularMarketPrice * 1.01).toFixed(2)),
-              dayLow: Number((meta.regularMarketDayLow || meta.dayLow || regularMarketPrice * 0.99).toFixed(2)),
-              volume: meta.regularMarketVolume,
+              dayHigh: Number((quote?.regularMarketDayHigh || meta?.regularMarketDayHigh || regularMarketPrice * 1.01).toFixed(2)),
+              dayLow: Number((quote?.regularMarketDayLow || meta?.regularMarketDayLow || regularMarketPrice * 0.99).toFixed(2)),
+              volume: quote?.regularMarketVolume || meta?.regularMarketVolume,
               lastUpdated: marketTimestamp.toISOString(),
               timestampIst: formatIstTimestamp(marketTimestamp),
               isLive: true,
-              source: 'YAHOO_LIVE'
+              source: 'NETLIFY_FUNCTION'
             };
 
             this.priceCache[cfg.symbolTicker] = liveData;
@@ -721,25 +713,27 @@ class MarketPriceService {
       const livePrice = this.getLivePrice(item);
       const cfg = resolveDynamicTicker(item);
 
-      // 1. High priority: Live quote from dedicated Financial Market API
+      // 1. High priority: Live quote from Netlify Function / Financial Market API
       // 2. Admin CMS custom configured price
-      // 3. Calibrated baseline registry price
-      const price = (livePrice && livePrice.source === 'YAHOO_LIVE' && livePrice.price > 0)
+      // 3. Calibrated baseline registry price (Embassy: 419.93, Mindspace: 499.37, Brookfield: 318.30)
+      const isLiveQuote = livePrice && (livePrice.source === 'NETLIFY_FUNCTION' || livePrice.source === 'YAHOO_LIVE') && livePrice.price > 0;
+
+      const price = isLiveQuote
         ? livePrice.price
         : (typeof item.currentPrice === 'number' && item.currentPrice > 0)
           ? item.currentPrice
           : (item.minInvestmentNumeric && item.minInvestmentNumeric > 0)
             ? item.minInvestmentNumeric
-            : (livePrice?.price ?? cfg.defaultBasePrice ?? 420.00);
+            : (livePrice?.price ?? cfg.defaultBasePrice ?? 419.93);
 
       const prevClose = cfg.previousClose || price;
-      const change = (livePrice && livePrice.source === 'YAHOO_LIVE')
+      const change = isLiveQuote
         ? livePrice.change24h
         : (typeof item.priceChange24h === 'number')
           ? item.priceChange24h
           : Number((price - prevClose).toFixed(2));
 
-      const changePct = (livePrice && livePrice.source === 'YAHOO_LIVE')
+      const changePct = isLiveQuote
         ? livePrice.changePercent24h
         : (typeof item.priceChangePercent24h === 'number')
           ? item.priceChangePercent24h
