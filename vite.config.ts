@@ -22,7 +22,7 @@ export default defineConfig({
           'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
         }
       },
-      '/.netlify/functions/stock-prices': {
+      '/api/stock-prices': {
         target: 'https://query1.finance.yahoo.com',
         changeOrigin: true,
         rewrite: (path) => {

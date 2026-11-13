@@ -30,7 +30,7 @@ export interface NseLivePrice {
   lastUpdated: string;
   timestampIst: string; // e.g. "10:08:30 AM IST"
   isLive: boolean;
-  source: 'NETLIFY_FUNCTION' | 'YAHOO_LIVE' | 'ADMIN_CMS' | 'SUPABASE_CACHE' | 'SIMULATED_TICK' | 'FALLBACK';
+  source: 'VERCEL_FUNCTION' | 'NETLIFY_FUNCTION' | 'YAHOO_LIVE' | 'ADMIN_CMS' | 'SUPABASE_CACHE' | 'SIMULATED_TICK' | 'FALLBACK';
 }
 
 /**
@@ -366,7 +366,7 @@ class MarketPriceService {
 
       // Protection: Do NOT overwrite verified live quotes with random simulation ticks!
       const currentEntry = this.priceCache[cfg.symbolTicker];
-      if (currentEntry && (currentEntry.source === 'NETLIFY_FUNCTION' || currentEntry.source === 'YAHOO_LIVE') && quote.source !== 'LIVE_API') {
+      if (currentEntry && (currentEntry.source === 'VERCEL_FUNCTION' || currentEntry.source === 'NETLIFY_FUNCTION' || currentEntry.source === 'YAHOO_LIVE') && quote.source !== 'LIVE_API') {
         return;
       }
 
@@ -438,9 +438,9 @@ class MarketPriceService {
   }
 
   /**
-   * Universal Dedicated Netlify Serverless Function Proxy Pipeline:
-   * 1. Constructs a batch request passing all symbols with .NS suffix to Netlify Function:
-   *    /.netlify/functions/stock-prices?symbols=EMBASSY.NS,MINDSPACE.NS,BIRET.NS,PGINVIT.NS
+   * Universal Dedicated Vercel Serverless Function Proxy Pipeline:
+   * 1. Constructs a batch request passing all symbols with .NS suffix to Vercel Function:
+   *    /api/stock-prices?symbols=EMBASSY.NS,MINDSPACE.NS,BIRET.NS,PGINVIT.NS
    * 2. Extracts regularMarketPrice, regularMarketChange, and regularMarketChangePercent for every queried symbol.
    * 3. Maps to each asset ID in application state.
    */
@@ -462,12 +462,11 @@ class MarketPriceService {
     const symbolsParam = formattedSymbols.join(',');
     let batchSuccess = false;
 
-    // 2. Primary: Netlify Serverless Function endpoint + resilient fallbacks
+    // 2. Primary: Vercel Serverless Function endpoint + resilient fallbacks
     const batchEndpoints: { url: string; headers?: Record<string, string> }[] = [
-      // Primary Netlify Serverless Function endpoint (unencoded symbols param for standard proxy routing)
-      { url: `/.netlify/functions/stock-prices?symbols=${symbolsParam}` },
-      // Encoded Netlify Serverless Function fallback
-      { url: `/.netlify/functions/stock-prices?symbols=${encodeURIComponent(symbolsParam)}` },
+      // Primary Vercel Serverless Function endpoint
+      { url: `/api/stock-prices?symbols=${symbolsParam}` },
+      { url: `/api/stock-prices?symbols=${encodeURIComponent(symbolsParam)}` },
       // Direct Yahoo Finance v7 quote endpoint (if running in backend/server environment)
       { url: `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(symbolsParam)}` },
       // Local Vite dev proxy
@@ -489,12 +488,12 @@ class MarketPriceService {
         clearTimeout(timeoutId);
 
         if (!res.ok) {
-          console.error(`[marketPriceService] Netlify function HTTP ${res.status} ${res.statusText} from endpoint: ${ep.url}`);
+          console.error(`[marketPriceService] Serverless function HTTP ${res.status} ${res.statusText} from endpoint: ${ep.url}`);
           continue;
         }
 
         const rawJson = await res.json();
-        console.log(`[marketPriceService] Netlify function response payload:`, rawJson);
+        console.log(`[marketPriceService] Serverless function response payload:`, rawJson);
 
         let parsedJson = rawJson;
         if (typeof parsedJson === 'string') {
@@ -555,7 +554,7 @@ class MarketPriceService {
                 lastUpdated: marketTime.toISOString(),
                 timestampIst: formatIstTimestamp(marketTime),
                 isLive: true,
-                source: 'NETLIFY_FUNCTION'
+                source: 'VERCEL_FUNCTION'
               };
 
               this.priceCache[cleanTicker] = liveData;
@@ -570,7 +569,7 @@ class MarketPriceService {
           console.warn('[marketPriceService] quoteResponse.result was empty or not an array in payload:', parsedJson);
         }
       } catch (err: any) {
-        console.error(`[marketPriceService] Netlify function fetch error from ${ep.url}:`, err);
+        console.error(`[marketPriceService] Serverless function fetch error from ${ep.url}:`, err);
         continue;
       }
     }
@@ -597,7 +596,7 @@ class MarketPriceService {
     const targetSymbol = cfg.yahooSymbol || `${symbol}.NS`;
 
     const candidateUrls = [
-      `/.netlify/functions/stock-prices?symbols=${targetSymbol}`,
+      `/api/stock-prices?symbols=${targetSymbol}`,
       `https://query1.finance.yahoo.com/v8/finance/chart/${targetSymbol}`,
       `/api/yahoo-finance/v8/finance/chart/${targetSymbol}`,
       `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${targetSymbol}`)}`,
@@ -661,7 +660,7 @@ class MarketPriceService {
               lastUpdated: marketTimestamp.toISOString(),
               timestampIst: formatIstTimestamp(marketTimestamp),
               isLive: true,
-              source: 'NETLIFY_FUNCTION'
+              source: 'VERCEL_FUNCTION'
             };
 
             this.priceCache[cfg.symbolTicker] = liveData;
