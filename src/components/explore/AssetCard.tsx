@@ -3,7 +3,7 @@ import { GlassCard } from '../common/GlassCard';
 import { Button } from '../common/Button';
 import type { InvestmentItem } from '../../types';
 import { useAssetLivePrice } from '../../hooks/useMarketData';
-import { isNseListedAsset, formatInrCurrency, formatIstTimestamp } from '../../services/marketPriceService';
+import { isNseListedAsset, formatInrCurrency } from '../../services/marketPriceService';
 import { 
   Building2, 
   TowerControl, 
@@ -15,7 +15,6 @@ import {
   Layers, 
   MapPin, 
   TrendingUp, 
-  TrendingDown,
   Clock, 
   AlertTriangle,
   Building,
@@ -37,34 +36,14 @@ export const AssetCard: React.FC<AssetCardProps> = ({
   isComparing
 }) => {
   const priceData = useAssetLivePrice(investment);
-  const isNseLive = isNseListedAsset(investment) && (investment.isNseLive ?? priceData.isLiveMode);
+  
+  // Conditional check for listed NSE instruments with exchange ticker
+  const isListedAsset = Boolean(investment.symbolTicker && isNseListedAsset(investment));
 
-  // Dynamic CURRENT PRICE: reflects live lastPrice for listed assets, or custom Admin CMS price for unlisted
-  const displayPriceText = isNseLive
-    ? (investment.liveNsePriceFormatted || priceData.displayPrice)
-    : (typeof investment.currentPrice === 'number'
-        ? formatInrCurrency(investment.currentPrice)
-        : priceData.displayPrice);
-
-  // Dynamic pChange: reflects live regularMarketChange & regularMarketChangePercent
-  const changeValue = typeof investment.priceChange24h === 'number'
-    ? investment.priceChange24h
-    : (priceData.numericChange ?? 0);
-
-  const changePctValue = typeof investment.priceChangePercent24h === 'number'
-    ? investment.priceChangePercent24h
-    : (priceData.numericChangePct ?? 0);
-
-  const isPositive = changeValue >= 0;
-  const sign = isPositive ? '+' : '';
-  const dayChangeFormatted = `${sign}${changeValue.toFixed(2)} (${sign}${changePctValue.toFixed(2)}%)`;
-
-  // Live market timestamp badge (IST)
-  const timestampIst = investment.lastPriceTimestampIst || formatIstTimestamp(investment.lastPriceUpdate || new Date());
-
-  const livePriceString = isNseLive
-    ? investment.nseLivePriceString || `${displayPriceText} / unit (NSE Live)`
-    : investment.minInvestment;
+  // Dynamic CURRENT PRICE: reflects custom Admin CMS price for unlisted assets
+  const displayPriceText = typeof investment.currentPrice === 'number'
+    ? formatInrCurrency(investment.currentPrice)
+    : priceData.displayPrice;
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
@@ -107,7 +86,7 @@ export const AssetCard: React.FC<AssetCardProps> = ({
     <GlassCard
       variant="interactive"
       className={`p-5 sm:p-6 rounded-3xl border border-champagne-500/40 bg-white/80 hover:bg-white/95 shadow-glass-md hover:shadow-glass-lg transition-all duration-300 flex flex-col justify-between group text-left relative overflow-hidden ${
-        priceData.isPulsing 
+        !isListedAsset && priceData.isPulsing 
           ? priceData.isPositive ? 'ring-2 ring-emerald-500/40' : 'ring-2 ring-rose-500/40'
           : ''
       }`}
@@ -125,11 +104,11 @@ export const AssetCard: React.FC<AssetCardProps> = ({
             </span>
           </div>
 
-          {/* DUAL-MODE PRICING BADGE WITH LIVE MARKET TIMESTAMP (IST) */}
-          {isNseLive ? (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black tracking-wider text-emerald-800 bg-emerald-500/15 border border-emerald-500/30 shrink-0">
-              <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
-              ● Live NSE • {timestampIst}
+          {/* DUAL-MODE PRICING BADGE */}
+          {isListedAsset ? (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider text-emerald-800 bg-emerald-500/15 border border-emerald-500/30 shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
+              NSE Listed • {investment.symbolTicker || investment.symbol}
             </span>
           ) : (
             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold text-copper-800 bg-champagne-500/20 border border-champagne-500/40 shrink-0">
@@ -165,80 +144,58 @@ export const AssetCard: React.FC<AssetCardProps> = ({
           {investment.tagline || investment.overview}
         </p>
 
-        {/* DYNAMIC ASSET PRICE ENGINE BOX */}
-        <div className={`p-3 rounded-2xl border mb-3.5 transition-all duration-300 ${
-          isNseLive 
-            ? 'bg-gradient-to-r from-emerald-500/5 via-sand-100 to-copper-500/5 border-emerald-500/25' 
-            : 'bg-sand-100/90 border-champagne-500/35'
-        }`}>
-          <div className="flex items-center justify-between gap-2">
-            <div>
-              <div className="flex items-center gap-1.5 flex-wrap">
+        {/* DYNAMIC ASSET PRICE ENGINE BOX / NSE REDIRECT PIVOT */}
+        {isListedAsset ? (
+          /* 1. Listed Asset Pivot: Replace stagnant CURRENT PRICE with direct NSE quote button */
+          <div className="p-3 rounded-2xl border border-emerald-500/25 bg-gradient-to-r from-emerald-500/5 via-sand-100 to-copper-500/5 mb-3.5 transition-all duration-300">
+            <div className="flex items-center justify-between gap-2">
+              <div>
                 <span className="text-[9.5px] uppercase font-bold text-espresso-500 tracking-wider block">
-                  {isNseLive ? 'CURRENT PRICE' : 'Assessed NAV / Base Unit'}
+                  MARKET PRICE (NSE)
                 </span>
-                {/* Live market timestamp badge (IST) */}
-                {isNseLive && (
-                  <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded-full text-[9px] font-mono font-bold bg-emerald-500/15 border border-emerald-500/30 text-emerald-800">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    ● Live NSE • {timestampIst}
-                  </span>
-                )}
-              </div>
-              
-              <div className="flex items-baseline gap-2 mt-0.5">
-                <span className={`text-base sm:text-lg font-mono font-black price-tick-transition ${
-                  priceData.isPulsing 
-                    ? isPositive ? 'text-emerald-700' : 'text-rose-700'
-                    : 'text-espresso-950'
-                }`}>
-                  {displayPriceText}
+                <span className="text-xs font-bold text-espresso-800 mt-0.5 block">
+                  NSE: {investment.symbolTicker}
                 </span>
-
-                {/* 24h Shift for Listed Assets */}
-                {isNseLive && (
-                  <span className={`inline-flex items-center gap-1 text-xs font-mono font-bold price-tick-transition ${
-                    isPositive ? 'text-emerald-700' : 'text-rose-700'
-                  }`}>
-                    {isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                    <span>Day Change: {dayChangeFormatted}</span>
-                  </span>
-                )}
               </div>
 
-              {/* Live price string preview */}
-              {isNseLive && (
-                <div className="flex items-center gap-1 mt-0.5 text-[10px] font-mono text-emerald-800 font-semibold">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  <span>{livePriceString}</span>
-                </div>
-              )}
-            </div>
-
-            {/* Right Sub-text / Valuation Label */}
-            <div className="text-right shrink-0">
-              {isNseLive ? (
-                <div className="text-right">
-                  <span className="text-[9px] font-mono text-espresso-500 block">
-                    {timestampIst}
-                  </span>
-                  <span className="text-[9px] font-mono text-emerald-700 font-bold block">
-                    NSE: {investment.symbolTicker || investment.symbol || 'LIVE'}
-                  </span>
-                </div>
-              ) : (
-                <div className="text-right">
-                  <span className="text-[9.5px] font-bold text-copper-700 block">
-                    {priceData.lastUpdatedText}
-                  </span>
-                  <span className="text-[9px] text-espresso-500 block">
-                    Target Yield: {investment.indicativeYield}
-                  </span>
-                </div>
-              )}
+              <a
+                href={`https://www.nseindia.com/get-quotes/equity?symbol=${investment.symbolTicker}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-emerald-800 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 hover:border-emerald-500/50 transition-all duration-200 group/link shadow-sm shrink-0 cursor-pointer"
+                aria-label={`View live price for ${investment.name} (${investment.symbolTicker}) on official NSE website`}
+              >
+                <span>View Live Price on NSE ↗</span>
+              </a>
             </div>
           </div>
-        </div>
+        ) : (
+          /* 3. Unlisted / Private Assets: Preserve fixed currentPrice and custom amounts from Admin CMS */
+          <div className="p-3 rounded-2xl border mb-3.5 transition-all duration-300 bg-sand-100/90 border-champagne-500/35">
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                <span className="text-[9.5px] uppercase font-bold text-espresso-500 tracking-wider block">
+                  Assessed NAV / Base Unit
+                </span>
+                <div className="flex items-baseline gap-2 mt-0.5">
+                  <span className="text-base sm:text-lg font-mono font-black text-espresso-950">
+                    {displayPriceText}
+                  </span>
+                </div>
+              </div>
+
+              <div className="text-right shrink-0">
+                <span className="text-[9.5px] font-bold text-copper-700 block">
+                  {priceData.lastUpdatedText}
+                </span>
+                <span className="text-[9px] text-espresso-500 block">
+                  Target Yield: {investment.indicativeYield}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Core Metrics Grid */}
         <div className="grid grid-cols-2 gap-2.5 p-3 rounded-2xl bg-sand-100/80 border border-champagne-500/30 mb-4">
@@ -257,30 +214,23 @@ export const AssetCard: React.FC<AssetCardProps> = ({
             </span>
           </div>
 
-          {/* MIN. INVESTMENT: Live Price for Listed, or Custom Admin CMS Ticket for Unlisted */}
+          {/* MIN. INVESTMENT: 1 Unit (Market Price) for Listed, or Custom Admin CMS Ticket for Unlisted */}
           <div>
             <span className="text-[10px] uppercase font-bold text-espresso-600 flex items-center gap-1">
               <Coins className="w-3 h-3 text-espresso-500" />
               <span>MIN. INVESTMENT</span>
             </span>
             <div className="text-sm sm:text-base font-mono font-bold text-espresso-950 mt-0.5 truncate flex items-center gap-1.5">
-              {isNseLive ? (
-                <>
-                  <span>{displayPriceText}</span>
-                  <span className="text-[10px] font-mono font-bold text-espresso-600">(1 Unit on NSE/BSE)</span>
-                  <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-emerald-500/15 text-emerald-800 border border-emerald-500/25">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    Live
-                  </span>
-                </>
+              {isListedAsset ? (
+                <span>1 Unit (Market Price)</span>
               ) : (
                 /* Reliable Admin Fallback: Preserves custom price configured in Admin CMS Portal */
                 <span>{investment.minInvestment}</span>
               )}
             </div>
             <span className="text-[9px] text-espresso-500 block truncate">
-              {isNseLive 
-                ? `${displayPriceText} (1 Unit on NSE/BSE)` 
+              {isListedAsset 
+                ? '1 Unit on NSE/BSE' 
                 : (investment.accessModel === 'Direct Public' ? '1 Unit Exchange Lot' : 'Curated Partner Access')}
             </span>
           </div>
